@@ -1,0 +1,25 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker image
+      run: docker build -t cortex-mcp .
+    
+    - name: Test Docker container
+      run: |
+        # Basic test that container runs
+        docker run --rm cortex-mcp python -c "print('Container OK')"
+        
+        # Test MCP server functionality
+        chmod +x tests/integration/test_docker.sh
+        CORTEX_API_TOKEN="test-token" ./tests/integration/test_docker.sh

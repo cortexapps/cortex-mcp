@@ -101,6 +101,28 @@ Sample `.vscode/mcp.json`
 
 ```
 
+### Warp
+
+Under Settings > AI > Manage MCP Servers, you can configure your JSON config:
+
+```json
+{
+  "cortex": {
+    "command": "docker",
+    "args": [
+      "run",
+      "--rm",
+      "-i",
+      "--env",
+      "CORTEX_API_TOKEN=YOUR_API_TOKEN_HERE",
+      "ghcr.io/cortexapps/cortex-mcp:latest"
+    ],
+    "env": {},
+    "start_on_launch": true
+  }
+}
+
+```
 
 ## Support
 

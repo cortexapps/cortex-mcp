@@ -22,6 +22,11 @@ Before getting started, you'll need:
 
 ## Installation
 
+>[!NOTE]
+>**Docker Required**
+>
+>Make sure Docker is installed and running on your system before proceeding with the installation.
+
 Then configure your MCP client. We've tested this with Claude Desktop, and Cursor, but it should work with any MCP-compatible client.:
 
 ### Claude Desktop
@@ -44,6 +49,25 @@ Then configure your MCP client. We've tested this with Claude Desktop, and Curso
 }
 ```
 
+### Claude Code
+
+Use the following command to add Cortex MCP to Claude Code:
+
+```bash
+claude mcp add-json "cortex" '{
+  "command": "docker",
+  "args": [
+    "run",
+    "--rm",
+    "-i",
+    "--env",
+    "CORTEX_API_TOKEN=YOUR_API_TOKEN_HERE",
+    "ghcr.io/cortexapps/cortex-mcp:latest"
+  ]
+}'
+```
+
+If successful, you should see: "Added stdio MCP server cortex to local config"
 
 ### Cursor
 

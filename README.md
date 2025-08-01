@@ -49,6 +49,25 @@ Then configure your MCP client. We've tested this with Claude Desktop, and Curso
 }
 ```
 
+### Claude Code
+
+Use the following command to add Cortex MCP to Claude Code:
+
+```bash
+claude mcp add-json "cortex" '{
+  "command": "docker",
+  "args": [
+    "run",
+    "--rm",
+    "-i",
+    "--env",
+    "CORTEX_API_TOKEN=YOUR_API_TOKEN_HERE",
+    "ghcr.io/cortexapps/cortex-mcp:latest"
+  ]
+}'
+```
+
+If successful, you should see: "Added stdio MCP server cortex to local config"
 
 ### Cursor
 
@@ -70,26 +89,6 @@ Then configure your MCP client. We've tested this with Claude Desktop, and Curso
 }
 
 ```
-
-### Claude Code
-
-Use the following command to add Cortex MCP to Claude Code:
-
-```bash
-claude mcp add-json "cortex" '{
-  "command": "docker",
-  "args": [
-    "run",
-    "--rm",
-    "-i",
-    "--env",
-    "CORTEX_API_TOKEN=YOUR_API_TOKEN_HERE",
-    "ghcr.io/cortexapps/cortex-mcp:latest"
-  ]
-}'
-```
-
-If successful, you should see: "Added stdio MCP server cortex to local config"
 
 ### VSCode
 

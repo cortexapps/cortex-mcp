@@ -2609,7 +2609,7 @@
             }
           },
           {
-            "description": "Filter based on a search query. This will search across entity properties. If provided, results will be sorted by relevance.",
+            "description": "Filter based on a [search query](https://docs.cortex.io/settings/search). This will search across entity properties. If provided, results will be sorted by relevance.",
             "in": "query",
             "name": "query",
             "required": false,
@@ -4060,6 +4060,15 @@
               "items": {
                 "type": "string"
               }
+            }
+          },
+          {
+            "description": "Include ownership information, default is true",
+            "in": "query",
+            "name": "includeOwners",
+            "required": false,
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -6880,7 +6889,8 @@
         "tags": [
           "Entity Relationships [Beta]"
         ],
-        "x-cortex-mcp-enabled": "false"
+        "x-cortex-mcp-description": "List all destinations for a certain relationship type \u0026 entity. Use the listRelationshipTypes tool to find the relevant relationshipTypeTag.",
+        "x-cortex-mcp-enabled": "true"
       },
       "post": {
         "description": "Add direct destinations for a given entity and entity relationship type",
@@ -7120,7 +7130,8 @@
         "tags": [
           "Entity Relationships [Beta]"
         ],
-        "x-cortex-mcp-enabled": "false"
+        "x-cortex-mcp-description": "List all sources for a certain relationship type \u0026 entity. Use the listRelationshipTypes tool to find the relevant relationshipTypeTag.",
+        "x-cortex-mcp-enabled": "true"
       },
       "post": {
         "description": "Add direct sources for a given entity and entity relationship type",
@@ -14367,7 +14378,8 @@
         "tags": [
           "Entity Relationship Types [Beta]"
         ],
-        "x-cortex-mcp-enabled": "false"
+        "x-cortex-mcp-description": "List all available relationship types with pagination. View relationship type configurations to understand what kinds of relationships can be created between entities like services, resources, domains, and teams",
+        "x-cortex-mcp-enabled": "true"
       },
       "post": {
         "description": "Create a relationship type",
@@ -14504,7 +14516,8 @@
         "tags": [
           "Entity Relationship Types [Beta]"
         ],
-        "x-cortex-mcp-enabled": "false"
+        "x-cortex-mcp-description": "Get complete details of a specific relationship type including its configuration, rules, source/destination filters, and inheritance settings. Essential for understanding how entities can be connected and what validation rules apply",
+        "x-cortex-mcp-enabled": "true"
       },
       "put": {
         "description": "Update relationship type",
@@ -14626,7 +14639,8 @@
         "tags": [
           "Entity Relationships [Beta]"
         ],
-        "x-cortex-mcp-enabled": "false"
+        "x-cortex-mcp-description": "List all entity relationships/full graph for a specific relationship type across the entire organization. Returns paginated results showing all source-destination pairs, useful for understanding the complete relationship graph and finding all connections of a particular type",
+        "x-cortex-mcp-enabled": "true"
       },
       "post": {
         "description": "Add all entity relationships for a certain relationship type.",
@@ -22495,52 +22509,6 @@
           }
         ]
       },
-      "GITHUB_CREATE_OR_UPDATE_FILE": {
-        "required": [
-          "alias",
-          "commitMessage",
-          "content",
-          "path",
-          "repositoryName",
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string",
-            "description": "The alias for the github configuration to be used"
-          },
-          "author": {
-            "$ref": "#/components/schemas/GithubAuthor"
-          },
-          "branch": {
-            "type": "string",
-            "description": "The branch in the repository where the changes will be applied (optional; defaults to the main branch if not specified)"
-          },
-          "commitMessage": {
-            "type": "string",
-            "description": "A message describing the purpose of the commit"
-          },
-          "committer": {
-            "$ref": "#/components/schemas/GithubCommitter"
-          },
-          "content": {
-            "type": "string",
-            "description": "The content of the file to be created or updated (not base64-encoded)"
-          },
-          "path": {
-            "type": "string",
-            "description": "The full path to the file within the repository"
-          },
-          "repositoryName": {
-            "type": "string",
-            "description": "The name of the repository where the file is being created or updated"
-          },
-          "type": {
-            "type": "string"
-          }
-        }
-      },
       "GITLAB": {
         "required": [
           "projectId"
@@ -23361,6 +23329,7 @@
             "type": "string",
             "enum": [
               "ACTIVE_DIRECTORY",
+              "AZURE_DEVOPS",
               "BAMBOOHR",
               "GIT",
               "GITLAB",
@@ -23395,6 +23364,7 @@
             "type": "string",
             "enum": [
               "ACTIVE_DIRECTORY",
+              "AZURE_DEVOPS",
               "BAMBOOHR",
               "GIT",
               "GITLAB",
@@ -27584,6 +27554,38 @@
           }
         }
       },
+      "VariableAssignment": {
+        "required": [
+          "slug",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "The type of the variable"
+          },
+          "source": {
+            "$ref": "#/components/schemas/VariableSource"
+          }
+        },
+        "description": "The variables to set for the action"
+      },
+      "VariableSource": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "description": "How to set the variable",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
       "ViolationDTO": {
         "required": [
           "paths"
@@ -27686,6 +27688,9 @@
             "$ref": "#/components/schemas/WorkflowActionSchema.ADVANCED_HTTP_REQUEST"
           },
           {
+            "$ref": "#/components/schemas/WorkflowActionSchema.HTTP_REQUEST_ASYNC"
+          },
+          {
             "$ref": "#/components/schemas/WorkflowActionSchema.SCAFFOLDER"
           },
           {
@@ -27704,10 +27709,25 @@
             "$ref": "#/components/schemas/WorkflowActionSchema.CONDITIONAL_BRANCH"
           },
           {
-            "$ref": "#/components/schemas/GITHUB_CREATE_OR_UPDATE_FILE"
+            "$ref": "#/components/schemas/WorkflowActionSchema.GITHUB_CREATE_OR_UPDATE_FILE"
           },
           {
             "$ref": "#/components/schemas/WorkflowActionSchema.MS_TEAMS_SEND_MESSAGE"
+          },
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema.JAVASCRIPT"
+          },
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema.SET_VARIABLES"
+          },
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema.AWS"
+          },
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema.PAGERDUTY_CREATE_INCIDENT"
+          },
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema.JIRA_CREATE_ISSUE"
           }
         ]
       },
@@ -27737,6 +27757,37 @@
           }
         }
       },
+      "WorkflowActionSchema.AWS": {
+        "title": "AWS",
+        "required": [
+          "accountId",
+          "actionIdentifier",
+          "inputs",
+          "region",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "actionIdentifier": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonNode"
+            }
+          },
+          "region": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
       "WorkflowActionSchema.CONDITIONAL_BRANCH": {
         "title": "CONDITIONAL_BRANCH",
         "required": [
@@ -27758,6 +27809,53 @@
           "joiningAction": {
             "type": "string",
             "description": "The joining action that will run after all branches"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkflowActionSchema.GITHUB_CREATE_OR_UPDATE_FILE": {
+        "title": "GITHUB_CREATE_OR_UPDATE_FILE",
+        "required": [
+          "alias",
+          "commitMessage",
+          "content",
+          "path",
+          "repositoryName",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string",
+            "description": "The alias for the github configuration to be used"
+          },
+          "author": {
+            "$ref": "#/components/schemas/GithubAuthor"
+          },
+          "branch": {
+            "type": "string",
+            "description": "The branch in the repository where the changes will be applied (optional; defaults to the main branch if not specified)"
+          },
+          "commitMessage": {
+            "type": "string",
+            "description": "A message describing the purpose of the commit"
+          },
+          "committer": {
+            "$ref": "#/components/schemas/GithubCommitter"
+          },
+          "content": {
+            "type": "string",
+            "description": "The content of the file to be created or updated (not base64-encoded)"
+          },
+          "path": {
+            "type": "string",
+            "description": "The full path to the file within the repository"
+          },
+          "repositoryName": {
+            "type": "string",
+            "description": "The name of the repository where the file is being created or updated"
           },
           "type": {
             "type": "string"
@@ -27806,6 +27904,146 @@
           }
         }
       },
+      "WorkflowActionSchema.HTTP_REQUEST_ASYNC": {
+        "title": "HTTP_REQUEST_ASYNC",
+        "required": [
+          "headers",
+          "httpMethod",
+          "type",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "description": "The headers for the HTTP request"
+            },
+            "description": "The headers for the HTTP request"
+          },
+          "httpMethod": {
+            "type": "string",
+            "description": "The HTTP method for the request",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "DELETE",
+              "PATCH"
+            ]
+          },
+          "payload": {
+            "type": "string",
+            "description": "The payload for the request"
+          },
+          "timeoutInSeconds": {
+            "type": "integer",
+            "description": "The timeout for the request in seconds",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "The URL for the request"
+          }
+        }
+      },
+      "WorkflowActionSchema.JAVASCRIPT": {
+        "title": "JAVASCRIPT",
+        "required": [
+          "script",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "The JavaScript script for the action"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkflowActionSchema.JIRA_CREATE_ISSUE": {
+        "title": "JIRA_CREATE_ISSUE",
+        "required": [
+          "alias",
+          "components",
+          "description",
+          "fields",
+          "issueSummary",
+          "issueType",
+          "labels",
+          "projectKey",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string",
+            "description": "The alias for the Jira configuration that will be used."
+          },
+          "assignee": {
+            "type": "string",
+            "description": "The identifier of the assignee for the Jira issue. This field is optional."
+          },
+          "components": {
+            "type": "array",
+            "description": "A list of components within the Jira project to which the issue belongs. This field is optional.",
+            "items": {
+              "type": "string",
+              "description": "A list of components within the Jira project to which the issue belongs. This field is optional."
+            }
+          },
+          "description": {
+            "type": "string",
+            "description": "A detailed description of the issue, providing more context about what needs to be addressed."
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
+            },
+            "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
+          },
+          "issueSummary": {
+            "type": "string",
+            "description": "A brief summary of the issue being created, typically representing the title of the issue."
+          },
+          "issueType": {
+            "type": "string",
+            "description": "The type of the issue being created, such as \u0027Bug\u0027, \u0027Task\u0027, or \u0027Story\u0027."
+          },
+          "labels": {
+            "type": "array",
+            "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional.",
+            "items": {
+              "type": "string",
+              "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional."
+            }
+          },
+          "priority": {
+            "type": "string",
+            "description": "The priority of the issue, such as \u0027High\u0027, \u0027Medium\u0027, or \u0027Low\u0027. This field is optional."
+          },
+          "projectKey": {
+            "type": "string",
+            "description": "The key of the Jira project where the issue will be created. Typically a short code like \u0027PROJ\u0027."
+          },
+          "reporter": {
+            "type": "string",
+            "description": "The identifier of the reporter who is raising the Jira issue. This field is optional."
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
       "WorkflowActionSchema.JQ": {
         "title": "JQ",
         "required": [
@@ -27831,6 +28069,10 @@
         ],
         "type": "object",
         "properties": {
+          "approverDescription": {
+            "type": "string",
+            "description": "A description that will be shown to approvers"
+          },
           "approvingTeamIds": {
             "type": "array",
             "description": "The IDs of the teams whose members can approve the action",
@@ -27871,6 +28113,51 @@
           }
         }
       },
+      "WorkflowActionSchema.PAGERDUTY_CREATE_INCIDENT": {
+        "title": "PAGERDUTY_CREATE_INCIDENT",
+        "required": [
+          "body",
+          "fromEmail",
+          "serviceId",
+          "title",
+          "type",
+          "urgency"
+        ],
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "The body of the incident"
+          },
+          "fromEmail": {
+            "type": "string",
+            "description": "The email address of a valid user associated with the account making the request"
+          },
+          "incidentTypeName": {
+            "type": "string",
+            "description": "The incident type name"
+          },
+          "serviceId": {
+            "type": "string",
+            "description": "The ID of the service to create the incident for"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the incident"
+          },
+          "type": {
+            "type": "string"
+          },
+          "urgency": {
+            "type": "string",
+            "description": "The urgency of the incident",
+            "enum": [
+              "HIGH",
+              "LOW"
+            ]
+          }
+        }
+      },
       "WorkflowActionSchema.SCAFFOLDER": {
         "title": "SCAFFOLDER",
         "required": [
@@ -27901,6 +28188,26 @@
           },
           "type": {
             "type": "string"
+          }
+        }
+      },
+      "WorkflowActionSchema.SET_VARIABLES": {
+        "title": "SET_VARIABLES",
+        "required": [
+          "type",
+          "variables"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "array",
+            "description": "The variables to set for the action",
+            "items": {
+              "$ref": "#/components/schemas/VariableAssignment"
+            }
           }
         }
       },
@@ -27960,7 +28267,9 @@
           "filter",
           "isDraft",
           "name",
-          "tag"
+          "restrictActionCompletionToRunnerUser",
+          "tag",
+          "variables"
         ],
         "type": "object",
         "properties": {
@@ -27974,6 +28283,10 @@
           "description": {
             "type": "string",
             "description": "Description of the workflow"
+          },
+          "failedRunResponseTemplate": {
+            "type": "string",
+            "description": "Template for the response when the workflow run fails"
           },
           "filter": {
             "$ref": "#/components/schemas/WorkflowFilter"
@@ -27990,9 +28303,13 @@
             "type": "string",
             "description": "Name of the workflow"
           },
+          "restrictActionCompletionToRunnerUser": {
+            "type": "boolean",
+            "description": "If true, only the user who started the workflow can complete actions. Defaults to false."
+          },
           "runResponseTemplate": {
             "type": "string",
-            "description": "Template for the response when the workflow is run"
+            "description": "Template for the response when the workflow is completed successfully"
           },
           "runRestrictionPolicies": {
             "type": "array",
@@ -28004,6 +28321,13 @@
           "tag": {
             "type": "string",
             "description": "Tag of the workflow"
+          },
+          "variables": {
+            "type": "array",
+            "description": "List of variable definitions for the workflow",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowVariable"
+            }
           }
         }
       },
@@ -28395,6 +28719,14 @@
               "description": "The list of options for the input"
             }
           },
+          "optionsLabels": {
+            "type": "array",
+            "description": "The list of labels for the options. If not provided, the options will be used as labels",
+            "items": {
+              "type": "string",
+              "description": "The list of labels for the options. If not provided, the options will be used as labels"
+            }
+          },
           "placeholder": {
             "type": "string",
             "description": "The placeholder value for the input"
@@ -28551,6 +28883,14 @@
             "items": {
               "type": "string",
               "description": "The list of options for the input"
+            }
+          },
+          "optionsLabels": {
+            "type": "array",
+            "description": "The list of labels for the options. If not provided, the options will be used as labels",
+            "items": {
+              "type": "string",
+              "description": "The list of labels for the options. If not provided, the options will be used as labels"
             }
           },
           "placeholder": {
@@ -28816,6 +29156,37 @@
             }
           }
         }
+      },
+      "WorkflowVariable": {
+        "required": [
+          "slug",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "defaultValue": {
+            "$ref": "#/components/schemas/JsonNode"
+          },
+          "slug": {
+            "type": "string",
+            "description": "The slug of the variable"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the variable",
+            "enum": [
+              "STRING",
+              "NUMBER",
+              "BOOLEAN",
+              "OBJECT",
+              "ARRAY_OF_STRING",
+              "ARRAY_OF_NUMBER",
+              "ARRAY_OF_BOOLEAN",
+              "ARRAY_OF_OBJECT"
+            ]
+          }
+        },
+        "description": "List of variable definitions for the workflow"
       },
       "YamlDescriptorsListResponse": {
         "required": [

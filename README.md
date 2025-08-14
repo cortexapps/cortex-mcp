@@ -114,6 +114,8 @@ Sample `.vscode/mcp.json`
         "run",
         "--rm",
         "-i",
+        "--env",
+        "CORTEX_API_TOKEN",
         "ghcr.io/cortexapps/cortex-mcp:latest"
       ],
       "env": {

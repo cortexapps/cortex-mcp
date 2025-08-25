@@ -27,7 +27,9 @@ Before getting started, you'll need:
 >
 >Make sure Docker is installed and running on your system before proceeding with the installation.
 
-Then configure your MCP client. We've tested this with Claude Desktop, and Cursor, but it should work with any MCP-compatible client.:
+Then configure your MCP client. We've tested this with Claude Desktop, and Cursor, but it should work with any MCP-compatible client.
+
+If you are a self-managed Cortex customer, you must also set `CORTEX_API_BASE_URL=https://` alongside the `CORTEX_API_TOKEN` variable. See [the docs](https://docs.cortex.io/get-started/mcp#self-managed-additional-configuration) for an example configuration.
 
 ### Claude Desktop
 

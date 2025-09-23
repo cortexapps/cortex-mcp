@@ -53,12 +53,7 @@ def customize_components(
 
         if hasattr(component, 'parameters') and isinstance(component.parameters, dict):
             if "$defs" in component.parameters:
-                logger.debug(f"  Found $defs with {len(component.parameters['$defs'])} definitions")
-                new_params = {k: v for k, v in component.parameters.items() if k != "$defs"}
-                component.parameters = new_params
-                logger.debug(f"  After modification: '$defs' in parameters = {'$defs' in component.parameters}")
-                mcp_tool = component.to_mcp_tool()
-                logger.debug(f"  In to_mcp_tool result: '$defs' in inputSchema = {'$defs' in mcp_tool.inputSchema}")
+                logger.debug(f"  Found $defs with {len(component.parameters['$defs'])} definitions - preserving them")
 
         # Handle output_schema the same way
         if hasattr(component, 'output_schema') and isinstance(component.output_schema, dict):

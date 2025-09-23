@@ -30,10 +30,10 @@ async def test_server(server_url):
         print(f"\n📦 Found {len(resource_templates)} resource templates:")
 
         for resource in resources:
-            print(f"  📄 {resource.name}: {resource.description}")
+            print(f"  📄 {resource.name}: {resource}")
 
         for tool in tools:
-            print(f"  🔧 {tool.name}: {tool.description}")
+            print(f"  🔧 {tool.name}: {tool}")
 
         # Test the first tool with empty args
         # if tools:

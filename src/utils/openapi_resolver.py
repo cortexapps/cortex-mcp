@@ -72,6 +72,7 @@ def resolve_refs(spec: dict[str, Any]) -> dict[str, Any]:
     return spec
 
 
+# Use if context becomes too large for inline definitions
 def resolve_refs_with_defs(spec: dict[str, Any]) -> dict[str, Any]:
     """
     Alternative approach: Keep $refs but ensure $defs section is populated.

@@ -33,7 +33,7 @@ async def test_server(server_url):
             print(f"  📄 {resource.name}: {resource}")
 
         for tool in tools:
-            print(f"  🔧 {tool.name}: {tool}")
+            print(f"  🔧 {tool.name}: {tool.description}")
 
         # Test the first tool with empty args
         # if tools:

@@ -39,7 +39,7 @@ def create_mcp_server() -> FastMCP:
 
     openapi_spec = load_openapi_spec()
 
-    # Resolve all $ref references to work around FastMCP issue
+    # Workaround to resolve all $ref references since FastMCP cannot resolve complex reference chains
     logger.info("Resolving OpenAPI $ref references...")
     openapi_spec = resolve_refs(openapi_spec)
     logger.info("OpenAPI $ref references resolved")

@@ -157,12 +157,6 @@
     },
     {
       "name": "[Integrations] SonarQube"
-    },
-    {
-      "name": "public-eng-intel-metrics-controller"
-    },
-    {
-      "name": "public-eng-intel-registry-controller"
     }
   ],
   "paths": {
@@ -2493,21 +2487,10 @@
         "operationId": "deleteEntitiesByType",
         "parameters": [
           {
-            "description": "A list of entity types or IDs delete",
+            "description": "A list of entity types to delete",
             "in": "query",
             "name": "types",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "in": "query",
-            "name": "ids",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "array",
               "items": {
@@ -2751,101 +2734,6 @@
         ],
         "x-cortex-mcp-description": "List and filter catalog entities with support for pagination, search, and various filters including groups, types, owners, and git repositories. If the client is trying to fetch data for teams, use \u0027type\u0027: \u0027team\u0027 in these APIs.",
         "x-cortex-mcp-enabled": "true"
-      }
-    },
-    "/api/v1/catalog/batch/{type}": {
-      "get": {
-        "description": "Gets a list of entities based on type and batch key plus identifier",
-        "operationId": "getEntitiesByBatchIdentifier",
-        "parameters": [
-          {
-            "description": "The type name of the batches to retrieve. This corresponds to the `x-cortex-type` field in the entity descriptor.",
-            "in": "path",
-            "name": "type",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "The batch key to filter entities by. This is a custom field set as entity metadata `__cortex_batch.key`",
-            "in": "query",
-            "name": "key",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "The batch version. This is a custom field set as entity metadata `__cortex_batch.identifier`, required if `compare` is specified",
-            "in": "query",
-            "name": "version",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "The type over comparison to perform. Ignored unless `version` parameter must also be provided.  Values can be `eq`, `ne`.",
-            "in": "query",
-            "name": "compare",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "includeArchived",
-            "required": false,
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          },
-          {
-            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
-            "in": "query",
-            "name": "pageSize",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 250
-            }
-          },
-          {
-            "description": "Page number to return, 0-indexed. Default 0.",
-            "in": "query",
-            "name": "page",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 0
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EntityCIDListResponse"
-                }
-              }
-            },
-            "description": "List of entity identifiers matching the batch key and type, based on the specified compare parameter."
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          }
-        },
-        "summary": "Get entities by batch identifier",
-        "tags": [
-          "Catalog Entities"
-        ],
-        "x-cortex-mcp-enabled": "false"
       }
     },
     "/api/v1/catalog/custom-data": {
@@ -9505,95 +9393,6 @@
         "x-cortex-mcp-enabled": "false"
       }
     },
-    "/api/v1/eng-intel/metrics/point-in-time": {
-      "post": {
-        "operationId": "pointInTimeMetrics",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Batch"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PointInTimeResponse"
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          }
-        },
-        "tags": [
-          "public-eng-intel-metrics-controller"
-        ],
-        "x-cortex-mcp-description": "Execute point-in-time queries for one or more engineering metrics in a single request.\n\n        Returns current metric values for specified time periods, with support for batch processing\n        and optional period-over-period comparisons.\n\n        Request body supports:\n        - Multiple metrics: Query several metrics efficiently in one call\n        - Time range (startTime/endTime): Limited to 6 months maximum for performance\n        - Flexible filtering: Use filters available for each metric (varies by source)\n        - Grouping options: Group results by available dimensions (author, repo, team, etc.)\n        - Aggregation methods: COUNT, SUM, AVG, MIN, MAX per metric requirements\n        - Period comparisons: Optional comparison to previous time windows\n        - Nested queries: Advanced nested metric calculations\n\n        Response includes:\n        - Lightweight metadata: Column definitions optimized for programmatic use\n        - Row data: Actual metric values and dimensional data\n        - No heavy schemas: Source definitions excluded (get from Registry API instead)\n\n        Error responses:\n        - 400: Invalid metric names, date range, validation errors, or unsupported metric combinations\n        - 403: Feature not enabled (contact help@cortex.io)",
-        "x-cortex-mcp-enabled": "true"
-      }
-    },
-    "/api/v1/eng-intel/registry/metrics/definitions": {
-      "get": {
-        "operationId": "listMetricDefinitions",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "view",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "basic"
-            }
-          },
-          {
-            "in": "query",
-            "name": "key",
-            "required": false,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/BasicMetricDefinitionsResponse"
-                    },
-                    {
-                      "$ref": "#/components/schemas/FullMetricDefinitionsResponse"
-                    }
-                  ]
-                }
-              }
-            },
-            "description": "OK"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          }
-        },
-        "tags": [
-          "public-eng-intel-registry-controller"
-        ],
-        "x-cortex-mcp-description": "List all available engineering metric definitions.\n\n        Query parameters:\n        - view: \u0027basic\u0027 (default) returns minimal info, \u0027full\u0027 includes sources and query metadata\n        - key: Filter metrics by key (supports multiple values and comma-separated lists)\n\n        Error responses:\n        - 400: Invalid view parameter (must be \u0027basic\u0027 or \u0027full\u0027)\n        - 403: Restricted Feature (contact help@cortex.io)\n\n        Filter operators by type (for constructing queries):\n        - STRING: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, LIKE, NOT_LIKE, IN, NOT_IN, ANY\n        - INTEGER/DECIMAL/DOUBLE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IN, NOT_IN, BETWEEN, ANY\n        - DATETIME/DATE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, BETWEEN\n        - BOOLEAN: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, IN, NOT_IN\n        - ARRAY: EQUAL, CONTAINS, IN",
-        "x-cortex-mcp-enabled": "true"
-      }
-    },
     "/api/v1/github/configurations": {
       "delete": {
         "operationId": "GitHubDeleteConfigurations",
@@ -15607,59 +15406,6 @@
         "x-cortex-mcp-enabled": "false"
       }
     },
-    "/api/v1/scorecards/{tag}/entity/{entityTag}/scores": {
-      "post": {
-        "description": "Triggers score evaluation for entity scorecard",
-        "operationId": "refreshScorecardScoreForEntity",
-        "parameters": [
-          {
-            "description": "Unique tag for the Scorecard",
-            "example": "my-production-readiness-checklist",
-            "in": "path",
-            "name": "tag",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "description": "The entity tag (`x-cortex-tag`) that identifies the entity.",
-            "in": "path",
-            "name": "entityTag",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Scorecard score evaluation triggered successfully"
-          },
-          "403": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Scorecard not found"
-          },
-          "409": {
-            "description": "Already evaluating scorecard"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "description": "Scorecard evaluation failed"
-          }
-        },
-        "summary": "Evaluate entity scorecard score",
-        "tags": [
-          "Scorecards"
-        ],
-        "x-cortex-mcp-description": "Cortex Scorecards API - Measure and track service quality, compliance, and maturity levels across your organization with customizable scorecards and rules",
-        "x-cortex-mcp-enabled": "false"
-      }
-    },
     "/api/v1/scorecards/{tag}/next-steps": {
       "get": {
         "operationId": "getScorecardNextStepsForEntity",
@@ -18577,77 +18323,6 @@
           }
         }
       },
-      "Attribute": {
-        "required": [
-          "name",
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "description": "Human-readable description of what this field contains"
-          },
-          "name": {
-            "type": "string",
-            "description": "Field name for use in queries"
-          },
-          "type": {
-            "type": "string",
-            "description": "Data type - determines which filter operators are supported (see endpoint description)",
-            "enum": [
-              "STRING",
-              "BOOLEAN",
-              "INTEGER",
-              "DECIMAL",
-              "DOUBLE",
-              "DATE",
-              "TREE",
-              "DATETIME",
-              "JSON",
-              "ARRAY",
-              "UNSUPPORTED"
-            ]
-          }
-        },
-        "description": "Queryable fields available on this dimension"
-      },
-      "AttributeFilterObject": {
-        "required": [
-          "attribute",
-          "operator",
-          "predicate"
-        ],
-        "type": "object",
-        "properties": {
-          "attribute": {
-            "type": "string"
-          },
-          "operator": {
-            "type": "string",
-            "enum": [
-              "ANY",
-              "BETWEEN",
-              "CONTAINS",
-              "EQUAL",
-              "GREATER_THAN",
-              "GREATER_THAN_OR_EQUAL",
-              "IN",
-              "IS_NOT_NULL",
-              "IS_NULL",
-              "LESS_THAN",
-              "LESS_THAN_OR_EQUAL",
-              "LIKE",
-              "NOT_EQUAL",
-              "NOT_IN",
-              "NOT_LIKE"
-            ]
-          },
-          "predicate": {
-            "type": "object"
-          }
-        }
-      },
       "AuditLogResponse": {
         "required": [
           "action",
@@ -19081,133 +18756,6 @@
             "$ref": "#/components/schemas/DepartmentResponse.BaseRole.TEAM_ROLE"
           }
         ]
-      },
-      "BasicMetricDefinition": {
-        "required": [
-          "displayName",
-          "key",
-          "readiness"
-        ],
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "description": "Description of what this metric measures"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "Human-readable name"
-          },
-          "key": {
-            "type": "string",
-            "description": "Unique identifier for the metric (used in queries)"
-          },
-          "readiness": {
-            "$ref": "#/components/schemas/Readiness"
-          }
-        },
-        "description": "List of available metric definitions with basic metadata"
-      },
-      "BasicMetricDefinitionsResponse": {
-        "required": [
-          "metrics"
-        ],
-        "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/MetricDefinitionsResponseObject"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "metrics": {
-                "type": "array",
-                "description": "List of available metric definitions with basic metadata",
-                "items": {
-                  "$ref": "#/components/schemas/BasicMetricDefinition"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "Batch": {
-        "required": [
-          "endTime",
-          "filters",
-          "groupBy",
-          "limit",
-          "metrics",
-          "orderBy",
-          "startTime"
-        ],
-        "type": "object",
-        "properties": {
-          "comparison": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/TimeWindow"
-              }
-            ]
-          },
-          "endTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "filters": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AttributeFilterObject"
-            }
-          },
-          "groupBy": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "metrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MetricAggregation"
-            }
-          },
-          "nestedGroupBy": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "nestedMetrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MetricAggregation"
-            }
-          },
-          "nestedTimeAttribute": {
-            "type": "string"
-          },
-          "nextPage": {
-            "type": "string"
-          },
-          "orderBy": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OrderBy"
-            }
-          },
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "timeAttribute": {
-            "type": "string"
-          }
-        }
       },
       "BulkAwsConfigurationsRequest": {
         "required": [
@@ -19716,33 +19264,6 @@
             "type": "boolean"
           }
         }
-      },
-      "Column": {
-        "required": [
-          "alias",
-          "name",
-          "ordinal"
-        ],
-        "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string"
-          },
-          "category": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "ordinal": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "description": "List of column definitions describing each field in the result rows"
       },
       "CompoundFilter": {
         "type": "object",
@@ -21758,32 +21279,6 @@
           }
         }
       },
-      "Dimension": {
-        "required": [
-          "attributes",
-          "description",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "attributes": {
-            "type": "array",
-            "description": "Queryable fields available on this dimension",
-            "items": {
-              "$ref": "#/components/schemas/Attribute"
-            }
-          },
-          "description": {
-            "type": "string",
-            "description": "Description of the relationship this dimension represents"
-          },
-          "name": {
-            "type": "string",
-            "description": "Dimension identifier for use in queries"
-          }
-        },
-        "description": "Related entities that can be joined for additional context"
-      },
       "DiscoveryAuditEvent": {
         "required": [
           "isIgnored",
@@ -22031,39 +21526,6 @@
           }
         },
         "description": "Emphasized rules for the Initiative. Either emphasized levels or rules must be provided"
-      },
-      "EntityCIDListResponse": {
-        "required": [
-          "ids",
-          "page",
-          "total",
-          "totalPages"
-        ],
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "description": "Unique, immutable, 18-character auto-generated identifier for the entity.",
-            "example": "en2da8159dbeefb974",
-            "items": {
-              "type": "string",
-              "description": "Unique, immutable, 18-character auto-generated identifier for the entity.",
-              "example": "en2da8159dbeefb974"
-            }
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
       },
       "EntityDestinationsResponse": {
         "required": [
@@ -22950,115 +22412,6 @@
         },
         "description": "Filter applied to the Initiative"
       },
-      "FilterOption": {
-        "required": [
-          "displayName",
-          "filter",
-          "key"
-        ],
-        "type": "object",
-        "properties": {
-          "displayName": {
-            "type": "string",
-            "description": "Human-readable label for this filter"
-          },
-          "filter": {
-            "type": "string",
-            "description": "Specific attribute to filter on"
-          },
-          "key": {
-            "type": "string",
-            "description": "Field key to reference in queries"
-          }
-        },
-        "description": "Available filtering options for querying metrics"
-      },
-      "FullMetricDefinition": {
-        "required": [
-          "displayName",
-          "key",
-          "readiness"
-        ],
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "description": "Description of what this metric measures"
-          },
-          "displayName": {
-            "type": "string",
-            "description": "Human-readable name"
-          },
-          "key": {
-            "type": "string",
-            "description": "Unique identifier for the metric (used in queries)"
-          },
-          "readiness": {
-            "$ref": "#/components/schemas/Readiness"
-          },
-          "sourceRef": {
-            "type": "string",
-            "description": "Reference to the data source in the sources map - indicates which integration provides this metric"
-          },
-          "timeAttribute": {
-            "$ref": "#/components/schemas/Attribute"
-          },
-          "type": {
-            "type": "string",
-            "description": "Type of metric: COUNT (discrete values), DURATION (time-based), RATIO/RATE (percentages), VALUE (continuous)",
-            "enum": [
-              "DURATION",
-              "COUNT",
-              "VALUE",
-              "RATE"
-            ]
-          },
-          "units": {
-            "type": "string",
-            "description": "Units of measurement (e.g., \u0027seconds\u0027, \u0027count\u0027, \u0027percentage\u0027)"
-          },
-          "valence": {
-            "type": "string",
-            "description": "Whether higher values are better (POSITIVE) or worse (NEGATIVE) for this metric",
-            "enum": [
-              "POSITIVE",
-              "NEGATIVE"
-            ]
-          }
-        },
-        "description": "List of available metric definitions with full metadata"
-      },
-      "FullMetricDefinitionsResponse": {
-        "required": [
-          "metrics",
-          "sources"
-        ],
-        "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/MetricDefinitionsResponseObject"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "metrics": {
-                "type": "array",
-                "description": "List of available metric definitions with full metadata",
-                "items": {
-                  "$ref": "#/components/schemas/FullMetricDefinition"
-                }
-              },
-              "sources": {
-                "type": "object",
-                "additionalProperties": {
-                  "$ref": "#/components/schemas/Source"
-                },
-                "description": "Map of source names to source metadata for query construction"
-              }
-            }
-          }
-        ]
-      },
       "GCP": {
         "required": [
           "projectId",
@@ -23705,24 +23058,6 @@
             "type": "boolean"
           }
         }
-      },
-      "GroupByOption": {
-        "required": [
-          "displayName",
-          "key"
-        ],
-        "type": "object",
-        "properties": {
-          "displayName": {
-            "type": "string",
-            "description": "Human-readable label for this grouping"
-          },
-          "key": {
-            "type": "string",
-            "description": "Field key to use in GROUP BY clause"
-          }
-        },
-        "description": "Available grouping options for aggregating metrics"
       },
       "GroupFilter": {
         "type": "object",
@@ -24775,53 +24110,6 @@
         },
         "description": "Custom data key/values associated with the entity."
       },
-      "MetricAggregation": {
-        "required": [
-          "aggregation",
-          "metric"
-        ],
-        "type": "object",
-        "properties": {
-          "aggregation": {
-            "type": "string",
-            "enum": [
-              "SUM",
-              "AVG",
-              "COUNT",
-              "RATIO",
-              "MIN",
-              "MAX",
-              "P50",
-              "P95",
-              "RANKING"
-            ]
-          },
-          "metric": {
-            "type": "string"
-          }
-        }
-      },
-      "MetricDefinitionsResponseObject": {
-        "required": [
-          "metrics",
-          "view"
-        ],
-        "type": "object",
-        "properties": {
-          "metrics": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "view": {
-            "type": "string"
-          }
-        },
-        "discriminator": {
-          "propertyName": "view"
-        }
-      },
       "ModifiedRuleExemptionsResponse": {
         "required": [
           "exemptions"
@@ -25772,25 +25060,6 @@
           }
         }
       },
-      "OrderBy": {
-        "required": [
-          "attribute",
-          "direction"
-        ],
-        "type": "object",
-        "properties": {
-          "attribute": {
-            "type": "string"
-          },
-          "direction": {
-            "type": "string",
-            "enum": [
-              "ASC",
-              "DESC"
-            ]
-          }
-        }
-      },
       "OwnerGroup": {
         "required": [
           "groupName"
@@ -26123,7 +25392,8 @@
           },
           "lastUpdated": {
             "type": "string",
-            "description": "When the plugin was last updated"
+            "description": "When the plugin was last updated",
+            "format": "date-time"
           },
           "minimumRoleRequired": {
             "type": "string",
@@ -26186,7 +25456,8 @@
           },
           "lastUpdated": {
             "type": "string",
-            "description": "When the plugin was last updated"
+            "description": "When the plugin was last updated",
+            "format": "date-time"
           },
           "minimumRoleRequired": {
             "type": "string",
@@ -26239,40 +25510,6 @@
             "type": "integer",
             "description": "Total number of pages",
             "format": "int32"
-          }
-        }
-      },
-      "PointInTimeComparison": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
-          }
-        },
-        "discriminator": {
-          "propertyName": "type"
-        }
-      },
-      "PointInTimeResponse": {
-        "required": [
-          "metadata",
-          "rows"
-        ],
-        "type": "object",
-        "properties": {
-          "metadata": {
-            "$ref": "#/components/schemas/QueryMetadata"
-          },
-          "rows": {
-            "type": "array",
-            "description": "Result rows containing metric values and dimensions - each row corresponds to the columns in metadata",
-            "items": {
-              "type": "object",
-              "description": "Result rows containing metric values and dimensions - each row corresponds to the columns in metadata"
-            }
           }
         }
       },
@@ -26382,22 +25619,6 @@
           }
         }
       },
-      "QueryMetadata": {
-        "required": [
-          "columns"
-        ],
-        "type": "object",
-        "properties": {
-          "columns": {
-            "type": "array",
-            "description": "List of column definitions describing each field in the result rows",
-            "items": {
-              "$ref": "#/components/schemas/Column"
-            }
-          }
-        },
-        "description": "Query metadata describing the structure of returned columns"
-      },
       "QueryRequest": {
         "required": [
           "query"
@@ -26475,21 +25696,6 @@
           "typeFilter": {
             "$ref": "#/components/schemas/EntityTypeFilter"
           }
-        }
-      },
-      "Readiness": {
-        "required": [
-          "type"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
-          }
-        },
-        "description": "Whether this metric is ready to use - includes hints if configuration is needed",
-        "discriminator": {
-          "propertyName": "type"
         }
       },
       "RejectRuleExemptionRequest": {
@@ -27410,56 +26616,6 @@
           }
         }
       },
-      "Source": {
-        "required": [
-          "attributes",
-          "description",
-          "dimensions",
-          "filterOptions",
-          "groupByOptions",
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "attributes": {
-            "type": "array",
-            "description": "Queryable fields available directly on this source",
-            "items": {
-              "$ref": "#/components/schemas/Attribute"
-            }
-          },
-          "description": {
-            "type": "string",
-            "description": "Human-readable description of what data this source provides"
-          },
-          "dimensions": {
-            "type": "array",
-            "description": "Related entities that can be joined for additional context",
-            "items": {
-              "$ref": "#/components/schemas/Dimension"
-            }
-          },
-          "filterOptions": {
-            "type": "array",
-            "description": "Available filtering options for querying metrics",
-            "items": {
-              "$ref": "#/components/schemas/FilterOption"
-            }
-          },
-          "groupByOptions": {
-            "type": "array",
-            "description": "Available grouping options for aggregating metrics",
-            "items": {
-              "$ref": "#/components/schemas/GroupByOption"
-            }
-          },
-          "name": {
-            "type": "string",
-            "description": "Unique identifier for the source"
-          }
-        },
-        "description": "Map of source names to source metadata for query construction"
-      },
       "TEAM_FILTER": {
         "required": [
           "type"
@@ -27871,36 +27027,6 @@
             }
           }
         }
-      },
-      "TimeWindow": {
-        "required": [
-          "decimalPlaces",
-          "endTime",
-          "startTime"
-        ],
-        "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/PointInTimeComparison"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "decimalPlaces": {
-                "type": "integer",
-                "format": "int32"
-              },
-              "endTime": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "startTime": {
-                "type": "string",
-                "format": "date-time"
-              }
-            }
-          }
-        ]
       },
       "TooManyRequestsProblemDetail": {
         "required": [
@@ -29129,10 +28255,6 @@
             "items": {
               "$ref": "#/components/schemas/WorkflowInput"
             }
-          },
-          "jsValidatorScript": {
-            "type": "string",
-            "description": "Optional JavaScript validator script to validate the provided inputs"
           },
           "type": {
             "type": "string"

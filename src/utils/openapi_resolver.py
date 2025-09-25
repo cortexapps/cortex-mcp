@@ -9,6 +9,8 @@ Since customizers.py currently hides output schemas, $ref resolutions are only v
 Performance note: Currently processes all ~800 endpoints but only ~20 become MCP tools.
 The dereferencing work is only visible in PointInTimeMetrics tool, since it's the only
 MCP-enabled endpoint with $ref chains in its input schema (output schemas are hidden).
+
+TODO: Optimize to only process MCP-enabled paths
 """
 
 from typing import Any

@@ -1,7 +1,5 @@
 """Tests for OpenAPI $ref resolver."""
 import json
-from unittest.mock import patch
-import pytest
 
 from src.utils.openapi_resolver import resolve_refs, resolve_refs_with_defs
 

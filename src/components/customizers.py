@@ -62,7 +62,7 @@ def customize_components(
         #
         # Openapi_resolver script replaces ALL $ref with inline schema definitions, and eliminates the need for $defs entirely.
         # Keep this code to prevent any remaining $defs from breaking MCP clients.
-        # 
+        #
         if hasattr(component, 'parameters') and isinstance(component.parameters, dict):
             if "$defs" in component.parameters:
                 logger.debug(f"  Found $defs with {len(component.parameters['$defs'])} definitions")

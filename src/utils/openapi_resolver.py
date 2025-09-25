@@ -1,4 +1,15 @@
-"""OpenAPI $ref resolver for FastMCP compatibility."""
+"""
+OpenAPI $ref resolver for FastMCP compatibility.
+
+FastMCP cannot resolve complex reference chains (e.g., $ref -> $defs -> $ref chains).
+This script replaces ALL $ref in the entire OpenAPI spec with inline schema definitions.
+
+Since customizers.py currently hides output schemas, $ref resolutions are only visible in INPUT schemas.
+
+Performance note: Currently processes all ~800 endpoints but only ~20 become MCP tools.
+The dereferencing work is only visible in PointInTimeMetrics tool, since it's the only
+MCP-enabled endpoint with $ref chains in its input schema (output schemas are hidden).
+"""
 
 from typing import Any
 

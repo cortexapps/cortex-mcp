@@ -30,7 +30,7 @@ async def test_server(server_url):
         print(f"\n📦 Found {len(resource_templates)} resource templates:")
 
         for resource in resources:
-            print(f"  📄 {resource.name}: {resource}")
+            print(f"  📄 {resource.name}: {resource.description}")
 
         for tool in tools:
             print(f"  🔧 {tool.name}: {tool.description}")

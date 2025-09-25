@@ -9,6 +9,7 @@ from .components.customizers import customize_components
 from .config import Config
 from .routes.mappers import custom_route_mapper
 from .utils.logging import setup_logging
+from .utils.openapi_resolver import resolve_refs
 
 logger = setup_logging()
 
@@ -37,6 +38,11 @@ def create_mcp_server() -> FastMCP:
     Config.validate()
 
     openapi_spec = load_openapi_spec()
+
+    # Workaround to resolve all $ref references since FastMCP cannot resolve complex reference chains
+    logger.info("Resolving OpenAPI $ref references...")
+    openapi_spec = resolve_refs(openapi_spec)
+    logger.info("OpenAPI $ref references resolved")
 
     client = create_cortex_client()
 

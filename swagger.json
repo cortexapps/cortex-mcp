@@ -51,10 +51,10 @@
       "name": "Docs"
     },
     {
-      "name": "Eng Intel: Metrics"
+      "name": "Eng Intel: 1-Registry"
     },
     {
-      "name": "Eng Intel: Registry"
+      "name": "Eng Intel: 2-Metrics"
     },
     {
       "name": "Eng Intel: User Labels"
@@ -9556,9 +9556,9 @@
         },
         "summary": "Execute point-in-time engineering metrics queries",
         "tags": [
-          "Eng Intel: Metrics"
+          "Eng Intel: 2-Metrics"
         ],
-        "x-cortex-mcp-description": "Execute point-in-time queries for one or more engineering metrics in a single request.\n\n        Returns current metric values for specified time periods, with support for batch queries\n        and optional period-over-period comparisons.\n\n        Request body supports:\n        - Multiple metrics: Query several metrics efficiently in one call\n        - Time range (startTime/endTime): Range cannot exceed 6 months (180 days)\n        - Flexible filtering: Use filters available for each metric (varies by source)\n        - Grouping options: Group results by available attributes or dimensions detailed from Registry API (author, repo, team, etc.)\n        - Aggregation methods: COUNT, SUM, AVG, MIN, MAX per metric requirements - check individual metric definitions\n        - Period comparisons: Optional comparison to previous time windows\n        - Nested queries: Advanced nested metric calculations\n\n        TIP: Always call Registry API first to discover available metrics and their supported operations.\n\n        Response includes:\n        - Lightweight metadata: Column definitions optimized for programmatic use\n        - Row data: Actual metric values and dimensional data\n        - No heavy schemas: Source definitions excluded (get from Registry API instead)\n\n        Error responses:\n        - 400: Invalid metric names, date range, validation errors, or unsupported metric combinations\n        - 403: Feature not enabled (contact help@cortex.io)",
+        "x-cortex-mcp-description": "Execute point-in-time queries for one or more engineering metrics in a single request.\n\n        Returns current metric values for specified time periods, with support for batch queries\n        and optional period-over-period comparisons.\n\n        Request body supports:\n        - Multiple metrics: Query several metrics efficiently in one call\n        - Time range (startTime/endTime): Range cannot exceed 6 months (180 days)\n        - Flexible filtering: Use filters available for each metric (varies by source)\n        - Grouping options: Group results by available attributes or dimensions detailed from Registry API (author, repo, team, etc.)\n        - Aggregation methods: COUNT, SUM, AVG, MIN, MAX per metric requirements - check individual metric definitions\n        - Period comparisons: Optional comparison to previous time windows\n        - Nested queries: Advanced nested metric calculations\n\n        PREREQUISITES:\n        - Before constructing aggregation methods: Get supportedAggregations from listMetricDefinitions\n        - Before constructing orderBy: Get orderByAttribute and other orderable attributes and dimension attributes from listMetricDefinitions\n        - Before constructing groupBy: Get groupByOptions.key from listMetricDefinitions\n        - Before constructing filters: Get filterOptions.filter from listMetricDefinitions\n\n        IMPORTANT: Do NOT guess or assume attribute names.\n        Before using this tool for the first time, ALWAYS call listMetricDefinitions with view\u003d\u0027full\u0027 first to discover available metrics, their supported operations, and exact attribute names.\n        This tool should be called BEFORE queryPointInTimeMetrics to determine:\n        - Whether the metric is available and it\u0027s readiness status\n        - Supported aggregations\n        - Valid orderBy attributes\n        - Valid groupByOptions keys\n        - Valid filter attribute names\n        Do NOT make the same call to listMetricDefinitions repeatedly. Use the results from the first call to optimize your queries and only make another call if specifically requested or the data may be stale (generally 4+ hours).\n\n        Response includes:\n        - Lightweight metadata: Column definitions optimized for programmatic use\n        - Row data: Actual metric values and dimensional data\n        - No heavy schemas: Source definitions excluded (get from Registry API instead)\n\n        Error responses:\n        - 400: Invalid metric names, date range, validation errors, or unsupported metric combinations\n        - 403: Feature not enabled (contact help@cortex.io)",
         "x-cortex-mcp-enabled": "true",
         "x-internal": true
       }
@@ -9640,9 +9640,9 @@
         },
         "summary": "List available engineering metric definitions",
         "tags": [
-          "Eng Intel: Registry"
+          "Eng Intel: 1-Registry"
         ],
-        "x-cortex-mcp-description": "List all available engineering metric definitions.\n\n        Query parameters:\n        - view: \u0027basic\u0027 (default) returns minimal info, \u0027full\u0027 includes sources and query metadata\n        - key: Filter metrics by key (supports multiple values and comma-separated lists)\n\n        Error responses:\n        - 400: Invalid view parameter (must be \u0027basic\u0027 or \u0027full\u0027)\n        - 403: Restricted Feature (contact help@cortex.io)\n\n        Filter operators by type (for constructing queries):\n        - STRING: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, LIKE, NOT_LIKE, IN, NOT_IN, ANY\n        - INTEGER/DECIMAL/DOUBLE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IN, NOT_IN, BETWEEN, ANY\n        - DATETIME/DATE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, BETWEEN\n        - BOOLEAN: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, IN, NOT_IN\n        - ARRAY: EQUAL, CONTAINS, IN",
+        "x-cortex-mcp-description": "List all available engineering metric definitions.\n\n        Query parameters:\n        - view: \u0027basic\u0027 (default) returns minimal info, \u0027full\u0027 includes sources and query metadata\n        - key: Filter metrics by key (supports multiple values and comma-separated lists)\n\n        Error responses:\n        - 400: Invalid view parameter (must be \u0027basic\u0027 or \u0027full\u0027)\n        - 403: Restricted Feature (contact help@cortex.io)\n\n        Valid orderBy attributes for metric queries:\n        - orderByAttribute: The metric value itself (returned in full view)\n        - Source attributes: Any attribute from the metric\u0027s source (e.g., \"source_name.attribute_name\")\n        - Dimension attributes: Any attribute from related dimensions (e.g., \"source_name.dimension_name.attribute_name\")\n\n        Valid groupBy options for metric queries:\n        - Use the exact \u0027key\u0027 field from groupByOptions in the source (returned in full view)\n        - Do NOT construct or guess groupBy keys - only use the keys explicitly listed in groupByOptions\n\n        Valid filter options for metric queries:\n        - Use the exact \u0027key\u0027 field from filterOptions in the source (returned in full view)\n        - The \u0027filter\u0027 field shows the actual attribute path being filtered\n        - Do NOT construct or guess filter keys - only use the keys explicitly listed in filterOptions\n\n        Filter operators by type (for constructing queries):\n        - STRING: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, LIKE, NOT_LIKE, IN, NOT_IN, ANY\n        - INTEGER/DECIMAL/DOUBLE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IN, NOT_IN, BETWEEN, ANY\n        - DATETIME/DATE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, BETWEEN\n        - BOOLEAN: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, IN, NOT_IN\n        - ARRAY: EQUAL, CONTAINS, IN",
         "x-cortex-mcp-enabled": "true",
         "x-internal": true
       }
@@ -12830,7 +12830,8 @@
                   "VERIFICATION_PERIOD_STARTED",
                   "VERIFICATION_PERIOD_REMINDER",
                   "AI_ASSISTANT_WELCOME_MESSAGE",
-                  "ENTITY_SCORE_DROPPED"
+                  "ENTITY_SCORE_DROPPED",
+                  "ONBOARDING_WIZARD_STATE_COMPLETED"
                 ]
               }
             }
@@ -13097,7 +13098,8 @@
                   "VERIFICATION_PERIOD_STARTED",
                   "VERIFICATION_PERIOD_REMINDER",
                   "AI_ASSISTANT_WELCOME_MESSAGE",
-                  "ENTITY_SCORE_DROPPED"
+                  "ENTITY_SCORE_DROPPED",
+                  "ONBOARDING_WIZARD_STATE_COMPLETED"
                 ]
               }
             }
@@ -22826,8 +22828,7 @@
               "description": "The entity types to include. Can be found on https://app.getcortexapp.com/admin/entities"
             }
           }
-        },
-        "description": "The type filter for the entity"
+        }
       },
       "ErrorResponse": {
         "required": [
@@ -22932,6 +22933,7 @@
             "type": "string"
           }
         },
+        "description": "API key or person who requested, approved, or rejected the exemption",
         "discriminator": {
           "propertyName": "type",
           "mapping": {
@@ -23069,12 +23071,34 @@
             "type": "string",
             "description": "Unique identifier for the metric (used in queries)"
           },
+          "orderByAttribute": {
+            "type": "string",
+            "description": "The attribute used for ordering/sorting metric results"
+          },
           "readiness": {
             "$ref": "#/components/schemas/Readiness"
           },
           "sourceRef": {
             "type": "string",
             "description": "Reference to the data source in the sources map - indicates which integration provides this metric"
+          },
+          "supportedAggregations": {
+            "type": "array",
+            "description": "Available aggregation functions for this metric (e.g., SUM, AVG, COUNT)",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SUM",
+                "AVG",
+                "COUNT",
+                "RATIO",
+                "MIN",
+                "MAX",
+                "P50",
+                "P95",
+                "RANKING"
+              ]
+            }
           },
           "timeAttribute": {
             "$ref": "#/components/schemas/Attribute"
@@ -23439,6 +23463,8 @@
         "properties": {
           "provider": {
             "type": "string",
+            "description": "Name of the Git provider",
+            "example": "GITHUB",
             "enum": [
               "AZURE_DEVOPS",
               "BITBUCKET",
@@ -25341,6 +25367,7 @@
           },
           "failedReason": {
             "type": "string",
+            "description": "The reason why this notification failed.",
             "enum": [
               "CHANNEL_NOT_FOUND",
               "MEMBER_EMAILS_NOT_FOUND",
@@ -25358,6 +25385,7 @@
           },
           "ignoredReason": {
             "type": "string",
+            "description": "The reason why this notification was ignored.",
             "enum": [
               "USER_UNSUBSCRIBED",
               "WORKSPACE_DISABLED",
@@ -25372,6 +25400,7 @@
           },
           "medium": {
             "type": "string",
+            "description": "The medium used to send the notification.",
             "enum": [
               "SLACK",
               "MICROSOFT_TEAMS",
@@ -25395,6 +25424,7 @@
           },
           "recipientType": {
             "type": "string",
+            "description": "The type of the notification recipient.",
             "enum": [
               "USER",
               "TEAM",
@@ -25413,6 +25443,7 @@
           },
           "status": {
             "type": "string",
+            "description": "The status of the notification log.",
             "enum": [
               "READY",
               "IGNORED",
@@ -25422,6 +25453,7 @@
           },
           "type": {
             "type": "string",
+            "description": "The type of the notification.",
             "enum": [
               "INITIATIVE_CREATION",
               "INITIATIVE_CUSTOM_SCHEDULE",
@@ -25445,7 +25477,8 @@
               "VERIFICATION_PERIOD_STARTED",
               "VERIFICATION_PERIOD_REMINDER",
               "AI_ASSISTANT_WELCOME_MESSAGE",
-              "ENTITY_SCORE_DROPPED"
+              "ENTITY_SCORE_DROPPED",
+              "ONBOARDING_WIZARD_STATE_COMPLETED"
             ]
           }
         }
@@ -25511,6 +25544,7 @@
           },
           "type": {
             "type": "string",
+            "description": "The type of the notification object.",
             "enum": [
               "ENTITY",
               "SCORECARD",
@@ -25557,6 +25591,7 @@
           },
           "failedReason": {
             "type": "string",
+            "description": "The reason why this notification run failed.",
             "enum": [
               "PACKET_GENERATOR_ERROR",
               "CONTEXT_RESOLUTION_ERROR",
@@ -25572,6 +25607,7 @@
           },
           "ignoredReason": {
             "type": "string",
+            "description": "The reason why this notification run was ignored.",
             "enum": [
               "SCORECARD_DISABLED",
               "WORKSPACE_DISABLED",
@@ -25580,6 +25616,7 @@
           },
           "medium": {
             "type": "string",
+            "description": "The medium used to send the notification.",
             "enum": [
               "SLACK",
               "MICROSOFT_TEAMS",
@@ -25596,6 +25633,7 @@
           },
           "notificationType": {
             "type": "string",
+            "description": "The type of the notification.",
             "enum": [
               "INITIATIVE_CREATION",
               "INITIATIVE_CUSTOM_SCHEDULE",
@@ -25619,7 +25657,8 @@
               "VERIFICATION_PERIOD_STARTED",
               "VERIFICATION_PERIOD_REMINDER",
               "AI_ASSISTANT_WELCOME_MESSAGE",
-              "ENTITY_SCORE_DROPPED"
+              "ENTITY_SCORE_DROPPED",
+              "ONBOARDING_WIZARD_STATE_COMPLETED"
             ]
           },
           "originalRunId": {
@@ -25634,6 +25673,7 @@
           },
           "status": {
             "type": "string",
+            "description": "The status of the notification run.",
             "enum": [
               "CREATED",
               "FAILED",

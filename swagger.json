@@ -81,6 +81,9 @@
       "name": "Initiatives"
     },
     {
+      "name": "My Workspace"
+    },
+    {
       "name": "Notification Logs"
     },
     {
@@ -2982,11 +2985,7 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DataCreateRequest"
-              }
-            }
+            "application/json": {}
           },
           "required": true
         },
@@ -3047,11 +3046,7 @@
         ],
         "requestBody": {
           "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BulkCustomDataRequest"
-              }
-            }
+            "application/json": {}
           },
           "required": true
         },
@@ -4416,7 +4411,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataCreateRequest"
+                "type": "string"
               }
             }
           },
@@ -9558,7 +9553,7 @@
         "tags": [
           "Eng Intel: 2-Metrics"
         ],
-        "x-cortex-mcp-description": "Execute point-in-time queries for one or more engineering metrics in a single request.\n\n        Returns current metric values for specified time periods, with support for batch queries\n        and optional period-over-period comparisons.\n\n        Request body supports:\n        - Multiple metrics: Query several metrics efficiently in one call\n        - Time range (startTime/endTime): Range cannot exceed 6 months (180 days)\n        - Flexible filtering: Use filters available for each metric (varies by source)\n        - Grouping options: Group results by available attributes or dimensions detailed from Registry API (author, repo, team, etc.)\n        - Aggregation methods: COUNT, SUM, AVG, MIN, MAX per metric requirements - check individual metric definitions\n        - Period comparisons: Optional comparison to previous time windows\n        - Nested queries: Advanced nested metric calculations\n\n        PREREQUISITES:\n        - Before constructing aggregation methods: Get supportedAggregations from listMetricDefinitions\n        - Before constructing orderBy: Get orderByAttribute and other orderable attributes and dimension attributes from listMetricDefinitions\n        - Before constructing groupBy: Get groupByOptions.key from listMetricDefinitions\n        - Before constructing filters: Get filterOptions.filter from listMetricDefinitions\n\n        IMPORTANT: Do NOT guess or assume attribute names.\n        Before using this tool for the first time, ALWAYS call listMetricDefinitions with view\u003d\u0027full\u0027 first to discover available metrics, their supported operations, and exact attribute names.\n        This tool should be called BEFORE queryPointInTimeMetrics to determine:\n        - Whether the metric is available and it\u0027s readiness status\n        - Supported aggregations\n        - Valid orderBy attributes\n        - Valid groupByOptions keys\n        - Valid filter attribute names\n        Do NOT make the same call to listMetricDefinitions repeatedly. Use the results from the first call to optimize your queries and only make another call if specifically requested or the data may be stale (generally 4+ hours).\n\n        Response includes:\n        - Lightweight metadata: Column definitions optimized for programmatic use\n        - Row data: Actual metric values and dimensional data\n        - No heavy schemas: Source definitions excluded (get from Registry API instead)\n\n        Error responses:\n        - 400: Invalid metric names, date range, validation errors, or unsupported metric combinations\n        - 403: Feature not enabled (contact help@cortex.io)",
+        "x-cortex-mcp-description": "Execute point-in-time queries for one or more engineering metrics.\n\n        Returns current metric values for specified time periods, with support for batch queries\n        and optional period-over-period comparisons. Time range (startTime/endTime) cannot exceed 6 months (180 days).\n\n        PREREQUISITES - Follow this workflow:\n        1. Discover all available metrics ONCE: Call listMetricDefinitions (view\u003d\u0027basic\u0027) - cache this response\n        2. Get metric query metadata ONCE per metric: Call listMetricDefinitions (view\u003d\u0027full\u0027, key\u003dMETRIC_KEY)\n           - supportedAggregations: Valid aggregation methods\n           - orderByAttribute: Attribute path for sorting by metric values\n           - groupByOptions[].key: Valid groupBy keys (use exact values, do NOT guess)\n           - filterOptions[].key: Valid filter keys (use exact values, do NOT guess)\n           Cache the full view response for each metric. Reuse the metadata from cached responses for subsequent queries on the same metric.\n        3. Construct query: Use the query metadata from the full view responses in step 2 to build valid point-in-time requests\n\n        IMPORTANT: Cache only results from listMetricDefinitions. Do NOT cache point-in-time query results - always execute fresh queries for current data.\n        Only refresh cached listMetricDefinitions responses if no longer in your context window or explicitly requested.\n        Do NOT guess attribute names - always use exact values from listMetricDefinitions responses.\n\n        Response includes:\n        - Lightweight metadata: Column definitions optimized for programmatic use\n        - Row data: Actual metric values and dimensional data\n        - No heavy schemas: Source definitions excluded (get from listMetricDefinitions instead)\n\n        Error responses:\n        - 400: Invalid metric names, date range, validation errors, or unsupported metric combinations\n        - 403: Feature not enabled (contact help@cortex.io)",
         "x-cortex-mcp-enabled": "true",
         "x-internal": true
       }
@@ -9642,7 +9637,7 @@
         "tags": [
           "Eng Intel: 1-Registry"
         ],
-        "x-cortex-mcp-description": "List all available engineering metric definitions.\n\n        Query parameters:\n        - view: \u0027basic\u0027 (default) returns minimal info, \u0027full\u0027 includes sources and query metadata\n        - key: Filter metrics by key (supports multiple values and comma-separated lists)\n\n        Error responses:\n        - 400: Invalid view parameter (must be \u0027basic\u0027 or \u0027full\u0027)\n        - 403: Restricted Feature (contact help@cortex.io)\n\n        Valid orderBy attributes for metric queries:\n        - orderByAttribute: The metric value itself (returned in full view)\n        - Source attributes: Any attribute from the metric\u0027s source (e.g., \"source_name.attribute_name\")\n        - Dimension attributes: Any attribute from related dimensions (e.g., \"source_name.dimension_name.attribute_name\")\n\n        Valid groupBy options for metric queries:\n        - Use the exact \u0027key\u0027 field from groupByOptions in the source (returned in full view)\n        - Do NOT construct or guess groupBy keys - only use the keys explicitly listed in groupByOptions\n\n        Valid filter options for metric queries:\n        - Use the exact \u0027key\u0027 field from filterOptions in the source (returned in full view)\n        - The \u0027filter\u0027 field shows the actual attribute path being filtered\n        - Do NOT construct or guess filter keys - only use the keys explicitly listed in filterOptions\n\n        Filter operators by type (for constructing queries):\n        - STRING: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, LIKE, NOT_LIKE, IN, NOT_IN, ANY\n        - INTEGER/DECIMAL/DOUBLE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IN, NOT_IN, BETWEEN, ANY\n        - DATETIME/DATE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, BETWEEN\n        - BOOLEAN: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, IN, NOT_IN\n        - ARRAY: EQUAL, CONTAINS, IN",
+        "x-cortex-mcp-description": "List all available engineering metric definitions.\n\n        USAGE - Call this endpoint BEFORE querying metrics (queryPointInTimeMetrics):\n        1. Once at start: Call with view\u003d\u0027basic\u0027 to discover all available metrics - cache this response\n        2. Once per metric: Call with view\u003d\u0027full\u0027 and key\u003dMETRIC_KEY to get detailed metadata - cache each response\n        3. Use cached metadata to construct valid point-in-time queries\n\n        Cache responses in your context. Only refresh if no longer in your context window or explicitly requested (ex to check if metric readiness has changed).\n\n        Query parameters:\n        - view: \u0027basic\u0027 (default) returns minimal info, \u0027full\u0027 includes sources and query metadata\n        - key: Filter metrics by key (supports multiple values and comma-separated lists)\n\n        Full view provides query construction metadata:\n        - supportedAggregations: Valid aggregation methods for the metric\n        - orderByAttribute: Attribute path for sorting by metric values\n        - groupByOptions[].key: Valid groupBy keys (use exact values, do NOT guess)\n        - filterOptions[].key: Valid filter keys (use exact values, do NOT guess)\n\n        Valid orderBy attributes for metric queries:\n        - orderByAttribute: The metric value itself (returned in full view)\n        - Source attributes: Any attribute from the metric\u0027s source (e.g., \"source_name.attribute_name\")\n        - Dimension attributes: Any attribute from related dimensions (e.g., \"source_name.dimension_name.attribute_name\")\n\n        Filter operators by type (for constructing queries):\n        - STRING: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, LIKE, NOT_LIKE, IN, NOT_IN, ANY\n        - INTEGER/DECIMAL/DOUBLE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IN, NOT_IN, BETWEEN, ANY\n        - DATETIME/DATE: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, BETWEEN\n        - BOOLEAN: EQUAL, NOT_EQUAL, IS_NULL, IS_NOT_NULL, IN, NOT_IN\n        - ARRAY: EQUAL, CONTAINS, IN\n\n        Error responses:\n        - 400: Invalid view parameter (must be \u0027basic\u0027 or \u0027full\u0027)\n        - 403: Restricted Feature (contact help@cortex.io)",
         "x-cortex-mcp-enabled": "true",
         "x-internal": true
       }
@@ -12304,6 +12299,64 @@
         "x-cortex-mcp-enabled": "false"
       }
     },
+    "/api/v1/mcp/my/workspace": {
+      "post": {
+        "description": "Retrieve various types of resources owned by or assigned to the current user",
+        "operationId": "getMyWorkspace",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyWorkspaceRequestWrapper"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved resources"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Invalid resource type or parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        },
+        "summary": "Get resources for the authenticated user",
+        "tags": [
+          "My Workspace"
+        ],
+        "x-cortex-mcp-description": "TOOL for retrieving current user\u0027s owned resources and work items across the Cortex workspace.\n\n        FLEXIBLE REQUEST STRUCTURE:\n        The request accepts an object with optional fields for each resource type:\n        - myEntitiesRequest: Fetch entities (services, resources, domains) owned by the user\n        - myTeamsRequest: Fetch teams the user belongs to\n        - myScorecardsRequest: Fetch scorecards associated with user\u0027s entities\n        - myOpenPRsRequest: Fetch user\u0027s open pull requests across all Git repositories\n        - myRequestedReviewsRequest: Fetch PRs where user is requested as a reviewer\n        - myWorkItemsRequest: Fetch work items (Jira, Linear, Azure DevOps) assigned to the user\n\n        Set one or more fields to fetch multiple resource types in a single call.\n        All results are combined into a single response array with mixed item types.\n\n        RESPONSE STRUCTURE:\n        Returns a single array of items where each item has an \u0027itemType\u0027 field indicating its type:\n        - \u0027entity\u0027: Catalog entities (services, resources, domains)\n        - \u0027team\u0027: Teams the user belongs to\n        - \u0027scorecard\u0027: Scorecards for user\u0027s entities\n        - \u0027pull_request\u0027: Open pull requests authored by the user\n        - \u0027review_request\u0027: Pull requests where user is requested as reviewer\n        - \u0027work_item\u0027: Work items (issues/tickets) assigned to the user\n\n        EXAMPLES:\n        1. Fetch only services:\n           {\"myEntitiesRequest\": {\"entityTypes\": [\"service\"]}}\n\n        2. Fetch teams and their entities:\n           {\"myTeamsRequest\": {\"includeMembers\": true}, \"myEntitiesRequest\": {}}\n\n        3. Get all work (PRs, reviews, Jira tickets):\n           {\"myOpenPRsRequest\": {}, \"myRequestedReviewsRequest\": {}, \"myWorkItemsRequest\": {}}\n\n        4. Search entities with filters:\n           {\"myEntitiesRequest\": {\"query\": \"payment\", \"ownershipSource\": \"DIRECT\", \"entityTypes\": [\"service\", \"resource\"]}}\n        ",
+        "x-cortex-mcp-enabled": "true",
+        "x-internal": true
+      }
+    },
     "/api/v1/newrelic/configuration": {
       "post": {
         "operationId": "NewRelicSaveConfiguration",
@@ -12938,9 +12991,7 @@
                 "enum": [
                   "USER_UNSUBSCRIBED",
                   "WORKSPACE_DISABLED",
-                  "TEAM_MEMBER_DISABLED",
                   "CHANNEL_DISABLED",
-                  "SCORECARD_DISABLED",
                   "DUPLICATE",
                   "CORTEX_EMPLOYEE",
                   "NON_CORTEX_USERS_DISABLED",
@@ -12963,7 +13014,6 @@
                   "MEMBER_EMAILS_NOT_FOUND",
                   "MISSING_CONTENT",
                   "CLIENT_ERROR",
-                  "UNEXPECTED_ERROR",
                   "BACKSTAGE_BASE_URL_MISSING",
                   "NO_SEATS_LEFT"
                 ]
@@ -13170,7 +13220,6 @@
                 "enum": [
                   "PACKET_GENERATOR_ERROR",
                   "CONTEXT_RESOLUTION_ERROR",
-                  "MISSING_RECIPIENTS",
                   "INTERNAL_ERROR"
                 ]
               }
@@ -13179,11 +13228,7 @@
           {
             "description": "A search query to filter the results.",
             "in": "query",
-            "name": "searchQuery",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
+            "name": "searchQuery"
           },
           {
             "description": "Whether to include the objects associated with the notification run.",
@@ -13215,6 +13260,15 @@
             "schema": {
               "type": "string",
               "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "deliveredOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
             }
           },
           {
@@ -15058,7 +15112,14 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/PublicIdentifier"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                ]
               }
             }
           },
@@ -15070,7 +15131,14 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/PublicIdentifier"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Id"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                ]
               }
             }
           },
@@ -18634,6 +18702,34 @@
       },
       "Attribute": {
         "required": [
+          "alias",
+          "attributeName",
+          "name",
+          "ordinal"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Column"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "attributeName": {
+                "type": "string",
+                "description": "Name of the attribute field this column represents"
+              },
+              "ordinal": {
+                "type": "integer",
+                "description": "Zero-based column position in the result data rows - use this to map column metadata to actual row data values",
+                "format": "int32"
+              }
+            }
+          }
+        ]
+      },
+      "Attribute1": {
+        "required": [
           "name",
           "type"
         ],
@@ -19159,7 +19255,14 @@
             "description": "Unique identifier for the metric (used in queries)"
           },
           "readiness": {
-            "$ref": "#/components/schemas/Readiness"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotReady"
+              },
+              {
+                "$ref": "#/components/schemas/Ready"
+              }
+            ]
           }
         },
         "description": "List of available metric definitions with basic metadata"
@@ -19184,6 +19287,9 @@
                 }
               }
             }
+          },
+          {
+            "$ref": "#/components/schemas/MetricDefinitionsResponseObject"
           }
         ]
       },
@@ -19304,73 +19410,6 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SingleAwsConfigurationResponse"
-            }
-          }
-        }
-      },
-      "BulkCustomDataRequest": {
-        "required": [
-          "values"
-        ],
-        "type": "object",
-        "properties": {
-          "values": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "description": "Map of entity tag -\u003e custom data key/values",
-              "example": {
-                "another-service-tag": [
-                  {
-                    "key": "different-key",
-                    "value": {
-                      "nested": "object"
-                    }
-                  },
-                  {
-                    "key": "my-cool-key",
-                    "value": "Hello again"
-                  }
-                ],
-                "service-x": [
-                  {
-                    "key": "my-key",
-                    "value": 100
-                  },
-                  {
-                    "key": "my-second-key",
-                    "value": "Hello"
-                  }
-                ]
-              },
-              "items": {
-                "$ref": "#/components/schemas/DataCreateRequest"
-              }
-            },
-            "description": "Map of entity tag -\u003e custom data key/values",
-            "example": {
-              "another-service-tag": [
-                {
-                  "key": "different-key",
-                  "value": {
-                    "nested": "object"
-                  }
-                },
-                {
-                  "key": "my-cool-key",
-                  "value": "Hello again"
-                }
-              ],
-              "service-x": [
-                {
-                  "key": "my-key",
-                  "value": 100
-                },
-                {
-                  "key": "my-second-key",
-                  "value": "Hello"
-                }
-              ]
             }
           }
         }
@@ -19555,28 +19594,25 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "cqlFilter": {
-            "$ref": "#/components/schemas/CQL_FILTER"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "entityGroupFilter": {
-            "$ref": "#/components/schemas/EntityGroupFilterDTO"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
-          },
-          "typeFilter": {
-            "$ref": "#/components/schemas/EntityTypeFilter"
+          {
+            "type": "object",
+            "properties": {
+              "cqlFilter": {
+                "$ref": "#/components/schemas/CQL_FILTER"
+              },
+              "entityGroupFilter": {
+                "$ref": "#/components/schemas/EntityGroupFilterDTO"
+              },
+              "typeFilter": {
+                "$ref": "#/components/schemas/EntityTypeFilter"
+              }
+            }
           }
-        }
+        ]
       },
       "CQL_FILTER": {
         "required": [
@@ -19585,39 +19621,36 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "category": {
-            "type": "string",
-            "enum": [
-              "Service",
-              "Resource",
-              "Domain",
-              "Team",
-              "Generic"
-            ]
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "cqlVersion": {
-            "type": "string",
-            "enum": [
-              "V1",
-              "V2"
-            ]
-          },
-          "query": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "Service",
+                  "Resource",
+                  "Domain",
+                  "Team",
+                  "Generic"
+                ]
+              },
+              "cqlVersion": {
+                "type": "string",
+                "enum": [
+                  "V1",
+                  "V2"
+                ]
+              },
+              "query": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "CUSTOM": {
         "required": [
@@ -19625,15 +19658,23 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "tag": {
-            "type": "string",
-            "description": "Tag of the [custom role](https://docs.cortex.io/docs/walkthroughs/workspace-settings/permissioning/custom-roles)"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiKeyRole"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string",
+                "description": "Tag of the [custom role](https://docs.cortex.io/docs/walkthroughs/workspace-settings/permissioning/custom-roles)"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "CallbackRequest": {
         "required": [
@@ -20456,17 +20497,11 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "source": {
-            "type": "string"
-          },
-          "tag": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CortexTeamMemberRole"
           }
-        }
+        ]
       },
       "CortexTeamMemberRole.TEAM_ROLE": {
         "title": "TEAM_ROLE",
@@ -20476,20 +20511,19 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CortexTeamMemberRole"
           },
-          "source": {
-            "type": "string"
-          },
-          "tag": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "CortexUserDefinition": {
         "required": [
@@ -20860,34 +20894,27 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "cortexTeam": {
-            "$ref": "#/components/schemas/CortexTeamDetails"
+        "description": "Use this request shape when creating a team entry whose memberships are manually maintained via API or the UI.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateTeamRequest"
           },
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+          {
+            "type": "object",
+            "properties": {
+              "cortexTeam": {
+                "$ref": "#/components/schemas/CortexTeamDetails"
+              },
+              "teamTag": {
+                "type": "string",
+                "description": "A unique identifier for the team, which is used for programmatic access as well as in Catalog Descriptors to define ownership of an entity."
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "teamTag": {
-            "type": "string",
-            "description": "A unique identifier for the team, which is used for programmatic access as well as in Catalog Descriptors to define ownership of an entity."
-          },
-          "type": {
-            "type": "string"
           }
-        },
-        "description": "Use this request shape when creating a team entry whose memberships are manually maintained via API or the UI."
+        ]
       },
       "CreateTeamRequest.IDP": {
         "title": "IDP",
@@ -20900,34 +20927,27 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "idpGroup": {
-            "$ref": "#/components/schemas/IdpGroupDetailsRequest"
+        "description": "Use this request shape when creating a team entry whose memberships are synced with an Idp group, such as from Okta, Google Groups, Github Teams, Azure AD, etc.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateTeamRequest"
           },
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+          {
+            "type": "object",
+            "properties": {
+              "idpGroup": {
+                "$ref": "#/components/schemas/IdpGroupDetailsRequest"
+              },
+              "teamTag": {
+                "type": "string",
+                "description": "A unique identifier for the team to be used for API/programmatic access"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "teamTag": {
-            "type": "string",
-            "description": "A unique identifier for the team to be used for API/programmatic access"
-          },
-          "type": {
-            "type": "string"
           }
-        },
-        "description": "Use this request shape when creating a team entry whose memberships are synced with an Idp group, such as from Okta, Google Groups, Github Teams, Azure AD, etc."
+        ]
       },
       "CurrentLevel": {
         "required": [
@@ -20995,21 +21015,6 @@
           },
           "value": {
             "$ref": "#/components/schemas/JsonNode"
-          }
-        }
-      },
-      "CustomDataType": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "object",
-            "writeOnly": true
-          }
-        },
-        "description": "Value for the key; can be any valid JSON type",
-        "example": {
-          "nested": {
-            "objects": "are ok"
           }
         }
       },
@@ -21329,42 +21334,47 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "description": "The role of the API key",
-            "enum": [
-              "READ_ONLY",
-              "USER",
-              "ADMIN"
-            ]
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiKeyRole"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "description": "The role of the API key",
+                "enum": [
+                  "READ_ONLY",
+                  "USER",
+                  "ADMIN"
+                ]
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "DOMAIN_FILTER": {
         "required": [
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityGroupFilter": {
-            "$ref": "#/components/schemas/EntityGroupFilterDTO"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "entityGroupFilter": {
+                "$ref": "#/components/schemas/EntityGroupFilterDTO"
+              }
+            }
           }
-        }
+        ]
       },
       "DYNATRACE": {
         "required": [
@@ -21384,26 +21394,6 @@
             }
           }
         ]
-      },
-      "DataCreateRequest": {
-        "required": [
-          "key",
-          "value"
-        ],
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string",
-            "description": "Custom data key for the entity",
-            "example": "my-key"
-          },
-          "value": {
-            "$ref": "#/components/schemas/CustomDataType"
-          }
-        }
       },
       "DatadogConfiguration": {
         "required": [
@@ -21622,14 +21612,19 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "tag": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseRole"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "DepartmentResponse.BaseRole.TEAM_ROLE": {
         "title": "TEAM_ROLE",
@@ -21639,17 +21634,22 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseRole"
           },
-          "tag": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "DependencyCreateRequest": {
         "type": "object",
@@ -21848,7 +21848,7 @@
             "type": "array",
             "description": "Queryable fields available on this dimension",
             "items": {
-              "$ref": "#/components/schemas/Attribute"
+              "$ref": "#/components/schemas/Attribute1"
             }
           },
           "description": {
@@ -21990,14 +21990,19 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityFilter": {
-            "$ref": "#/components/schemas/EntityFilter"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CortexPluginContext"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "entityFilter": {
+                "$ref": "#/components/schemas/EntityFilter"
+              }
+            }
           }
-        }
+        ]
       },
       "EditPersonalConfigurationRequest": {
         "required": [
@@ -22109,6 +22114,101 @@
           }
         },
         "description": "Emphasized rules for the Initiative. Either emphasized levels or rules must be provided"
+      },
+      "Entities": {
+        "required": [
+          "includeArchived",
+          "ownershipSource",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "entityTypes": {
+            "type": "array",
+            "description": "Filter by entity types",
+            "example": [
+              "service",
+              "resource",
+              "domain"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Filter by entity types",
+              "example": "[\"service\",\"resource\",\"domain\"]"
+            }
+          },
+          "includeArchived": {
+            "type": "boolean",
+            "description": "Include archived entities"
+          },
+          "ownershipSource": {
+            "type": "string",
+            "description": "Source of ownership (DIRECT, INHERITED, ALL)",
+            "enum": [
+              "DIRECT",
+              "TEAM_HIERARCHY"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number to return, 0-indexed. Default 0.",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
+            "format": "int32",
+            "example": 250
+          },
+          "query": {
+            "type": "string",
+            "description": "Optional search query to filter entities by name or other properties"
+          }
+        },
+        "description": "Request for all entities (services, resources, domains) owned by the user"
+      },
+      "Entity": {
+        "required": [
+          "archived",
+          "cid",
+          "name",
+          "tag",
+          "type"
+        ],
+        "type": "object",
+        "description": "Catalog entity (service, resource, or domain) owned by the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "archived": {
+                "type": "boolean",
+                "description": "Whether the entity is archived"
+              },
+              "cid": {
+                "type": "string",
+                "description": "Entity CID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Entity name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Entity tag"
+              },
+              "type": {
+                "type": "string",
+                "description": "Entity type (service, resource, domain)"
+              }
+            }
+          }
+        ]
       },
       "EntityCIDListResponse": {
         "required": [
@@ -22436,6 +22536,39 @@
           }
         },
         "description": "Hierarchy details for the entity. Includes both the parent \u0026 the children chains."
+      },
+      "EntityReference": {
+        "required": [
+          "alias",
+          "attributeName",
+          "entityType",
+          "name",
+          "ordinal"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Column"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "attributeName": {
+                "type": "string",
+                "description": "Name of the attribute that references the entity"
+              },
+              "entityType": {
+                "type": "string",
+                "description": "Type of entity being referenced (e.g., \u0027user\u0027, \u0027team\u0027, \u0027service\u0027)"
+              },
+              "ordinal": {
+                "type": "integer",
+                "description": "Zero-based column position in the result data rows - use this to map column metadata to actual row data values",
+                "format": "int32"
+              }
+            }
+          }
+        ]
       },
       "EntityRelationship": {
         "required": [
@@ -22935,11 +23068,11 @@
         },
         "description": "API key or person who requested, approved, or rejected the exemption",
         "discriminator": {
-          "propertyName": "type",
           "mapping": {
             "API": "#/components/schemas/RuleExemptionApiActor",
             "USER": "#/components/schemas/RuleExemptionUserActor"
-          }
+          },
+          "propertyName": "type"
         },
         "oneOf": [
           {
@@ -23076,7 +23209,14 @@
             "description": "The attribute used for ordering/sorting metric results"
           },
           "readiness": {
-            "$ref": "#/components/schemas/Readiness"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotReady"
+              },
+              {
+                "$ref": "#/components/schemas/Ready"
+              }
+            ]
           },
           "sourceRef": {
             "type": "string",
@@ -23101,7 +23241,7 @@
             }
           },
           "timeAttribute": {
-            "$ref": "#/components/schemas/Attribute"
+            "$ref": "#/components/schemas/Attribute1"
           },
           "type": {
             "type": "string",
@@ -23156,6 +23296,9 @@
                 "description": "Map of source names to source metadata for query construction"
               }
             }
+          },
+          {
+            "$ref": "#/components/schemas/MetricDefinitionsResponseObject"
           }
         ]
       },
@@ -23286,11 +23429,11 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CortexPluginContext"
           }
-        }
+        ]
       },
       "GitDetails": {
         "required": [
@@ -23463,8 +23606,7 @@
         "properties": {
           "provider": {
             "type": "string",
-            "description": "Name of the Git provider",
-            "example": "GITHUB",
+            "description": "Git provider (GitHub, GitLab, etc.)",
             "enum": [
               "AZURE_DEVOPS",
               "BITBUCKET",
@@ -23667,26 +23809,22 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GithubConfigurationResponse"
           },
-          "appUrl": {
-            "type": "string"
-          },
-          "host": {
-            "type": "string"
-          },
-          "installation": {
-            "$ref": "#/components/schemas/Installation"
-          },
-          "isDefault": {
-            "type": "boolean"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "appUrl": {
+                "type": "string"
+              },
+              "installation": {
+                "$ref": "#/components/schemas/Installation"
+              }
+            }
           }
-        }
+        ]
       },
       "GithubConfigurationResponse.PERSONAL_ACCESS_TOKEN": {
         "title": "PERSONAL_ACCESS_TOKEN",
@@ -23696,20 +23834,11 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string"
-          },
-          "host": {
-            "type": "string"
-          },
-          "isDefault": {
-            "type": "boolean"
-          },
-          "type": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GithubConfigurationResponse"
           }
-        }
+        ]
       },
       "GitlabConfiguration": {
         "required": [
@@ -23912,42 +24041,7 @@
         "type": "object",
         "properties": {
           "children": {
-            "required": [
-              "id",
-              "name",
-              "tag",
-              "type"
-            ],
-            "type": "object",
-            "properties": {
-              "definition": {
-                "$ref": "#/components/schemas/JsonNode"
-              },
-              "description": {
-                "type": "string"
-              },
-              "groups": {
-                "type": "array",
-                "description": "List of groups for this node. Only included if includeHierarchyFields contains groups",
-                "items": {
-                  "type": "string",
-                  "description": "List of groups for this node. Only included if includeHierarchyFields contains groups"
-                }
-              },
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "tag": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              }
-            },
-            "description": "Child at the current depth, and its children."
+            "$ref": "#/components/schemas/HierarchyChildNode"
           },
           "definition": {
             "$ref": "#/components/schemas/JsonNode"
@@ -24009,42 +24103,7 @@
             "type": "string"
           },
           "parents": {
-            "required": [
-              "id",
-              "name",
-              "tag",
-              "type"
-            ],
-            "type": "object",
-            "properties": {
-              "definition": {
-                "$ref": "#/components/schemas/JsonNode"
-              },
-              "description": {
-                "type": "string"
-              },
-              "groups": {
-                "type": "array",
-                "description": "List of groups for this node. Only included if includeHierarchyFields contains groups",
-                "items": {
-                  "type": "string",
-                  "description": "List of groups for this node. Only included if includeHierarchyFields contains groups"
-                }
-              },
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "tag": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              }
-            },
-            "description": "Parent at the current depth, and its parents."
+            "$ref": "#/components/schemas/HierarchyParentNode"
           },
           "tag": {
             "type": "string"
@@ -24071,6 +24130,25 @@
             "type": "object",
             "properties": {
               "label": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Id": {
+        "required": [
+          "cid"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cid": {
                 "type": "string"
               }
             }
@@ -24527,6 +24605,26 @@
           }
         }
       },
+      "JavaScript": {
+        "required": [
+          "script",
+          "type"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VariableSource"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "script": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "JsonDescriptorsListResponse": {
         "required": [
           "descriptors",
@@ -24875,6 +24973,49 @@
         },
         "description": "Custom data key/values associated with the entity."
       },
+      "MetricAggregate": {
+        "required": [
+          "aggregationFunction",
+          "alias",
+          "metricKey",
+          "name",
+          "ordinal"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Column"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "aggregationFunction": {
+                "type": "string",
+                "enum": [
+                  "SUM",
+                  "AVG",
+                  "COUNT",
+                  "RATIO",
+                  "MIN",
+                  "MAX",
+                  "P50",
+                  "P95",
+                  "RANKING"
+                ]
+              },
+              "metricKey": {
+                "type": "string",
+                "description": "Unique identifier of the metric being aggregated"
+              },
+              "ordinal": {
+                "type": "integer",
+                "description": "Zero-based column position in the result data rows - use this to map column metadata to actual row data values",
+                "format": "int32"
+              }
+            }
+          }
+        ]
+      },
       "MetricAggregation": {
         "required": [
           "aggregation",
@@ -24920,7 +25061,14 @@
             "type": "string"
           },
           "readiness": {
-            "$ref": "#/components/schemas/Readiness"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NotReady"
+              },
+              {
+                "$ref": "#/components/schemas/Ready"
+              }
+            ]
           }
         }
       },
@@ -24944,6 +25092,55 @@
         "discriminator": {
           "propertyName": "view"
         }
+      },
+      "MetricDefinitionsResponseObject": {
+        "required": [
+          "metrics",
+          "view"
+        ],
+        "type": "object",
+        "properties": {
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "view": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "view"
+        }
+      },
+      "MetricValue": {
+        "required": [
+          "alias",
+          "metricKey",
+          "name",
+          "ordinal"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Column"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "metricKey": {
+                "type": "string",
+                "description": "Unique identifier of the metric this column represents"
+              },
+              "ordinal": {
+                "type": "integer",
+                "description": "Zero-based column position in the result data rows - use this to map column metadata to actual row data values",
+                "format": "int32"
+              }
+            }
+          }
+        ]
       },
       "ModifiedRuleExemptionsResponse": {
         "required": [
@@ -25204,6 +25401,89 @@
           }
         }
       },
+      "MyWorkspaceItem": {
+        "required": [
+          "itemType"
+        ],
+        "type": "object",
+        "properties": {
+          "itemType": {
+            "type": "string"
+          }
+        },
+        "description": "Item returned in My Workspace response - type varies by resourceType",
+        "discriminator": {
+          "mapping": {
+            "entity": "#/components/schemas/Entity",
+            "pull_request": "#/components/schemas/PullRequest",
+            "review_request": "#/components/schemas/ReviewRequest",
+            "scorecard": "#/components/schemas/Scorecard",
+            "team": "#/components/schemas/Team",
+            "work_item": "#/components/schemas/WorkItem"
+          },
+          "propertyName": "itemType"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Entity"
+          },
+          {
+            "$ref": "#/components/schemas/Team"
+          },
+          {
+            "$ref": "#/components/schemas/Scorecard"
+          },
+          {
+            "$ref": "#/components/schemas/PullRequest"
+          },
+          {
+            "$ref": "#/components/schemas/ReviewRequest"
+          },
+          {
+            "$ref": "#/components/schemas/WorkItem"
+          }
+        ]
+      },
+      "MyWorkspaceRequestWrapper": {
+        "type": "object",
+        "properties": {
+          "myEntitiesRequest": {
+            "$ref": "#/components/schemas/Entities"
+          },
+          "myOpenPRsRequest": {
+            "$ref": "#/components/schemas/OpenPRs"
+          },
+          "myRequestedReviewsRequest": {
+            "$ref": "#/components/schemas/RequestedReviews"
+          },
+          "myScorecardsRequest": {
+            "$ref": "#/components/schemas/Scorecards"
+          },
+          "myTeamsRequest": {
+            "$ref": "#/components/schemas/Teams"
+          },
+          "myWorkItemsRequest": {
+            "$ref": "#/components/schemas/WorkItems"
+          }
+        },
+        "description": "\n        Request wrapper for fetching user\u0027s workspace. Supports fetching multiple resource types in a single call.\n        Set one or more of the request fields to fetch the corresponding resources. Results will be combined into a single response.\n\n        Examples:\n        - Fetch entities only: {\"myEntitiesRequest\": {\"ownershipSource\": \"DIRECT\", \"entityTypes\": [\"service\"]}}\n        - Fetch teams only: {\"myTeamsRequest\": {\"includeMembers\": true}}\n        - Fetch both entities and teams: {\"myEntitiesRequest\": {...}, \"myTeamsRequest\": {...}}\n    "
+      },
+      "MyWorkspaceResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "Mixed array of resources. Each item\u0027s type is indicated by its \u0027itemType\u0027 field.",
+            "items": {
+              "$ref": "#/components/schemas/MyWorkspaceItem"
+            }
+          }
+        },
+        "description": "Unified response containing workspace resources of various types (entities, teams, scorecards, etc.)"
+      },
       "NEWRELIC": {
         "required": [
           "id"
@@ -25335,6 +25615,25 @@
           }
         }
       },
+      "NotReady": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Readiness"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "docsUrl": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "NotificationLog": {
         "required": [
           "id",
@@ -25373,7 +25672,6 @@
               "MEMBER_EMAILS_NOT_FOUND",
               "MISSING_CONTENT",
               "CLIENT_ERROR",
-              "UNEXPECTED_ERROR",
               "BACKSTAGE_BASE_URL_MISSING",
               "NO_SEATS_LEFT"
             ]
@@ -25389,9 +25687,7 @@
             "enum": [
               "USER_UNSUBSCRIBED",
               "WORKSPACE_DISABLED",
-              "TEAM_MEMBER_DISABLED",
               "CHANNEL_DISABLED",
-              "SCORECARD_DISABLED",
               "DUPLICATE",
               "CORTEX_EMPLOYEE",
               "NON_CORTEX_USERS_DISABLED",
@@ -25595,7 +25891,6 @@
             "enum": [
               "PACKET_GENERATOR_ERROR",
               "CONTEXT_RESOLUTION_ERROR",
-              "MISSING_RECIPIENTS",
               "INTERNAL_ERROR"
             ]
           },
@@ -25876,6 +26171,19 @@
           }
         }
       },
+      "OpenPRs": {
+        "required": [
+          "placeholder"
+        ],
+        "type": "object",
+        "properties": {
+          "placeholder": {
+            "type": "boolean",
+            "description": "No additional parameters required - returns all open PRs for the user"
+          }
+        },
+        "description": "Request for user\u0027s open pull requests across all Git repositories"
+      },
       "Option": {
         "required": [
           "inputKey",
@@ -25883,19 +26191,27 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "inputKey": {
-            "type": "string",
-            "description": "The input key to override"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InputOverride"
           },
-          "outputVariable": {
-            "type": "string",
-            "description": "The path to the override value in the workflow context"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "inputKey": {
+                "type": "string",
+                "description": "The input key to override"
+              },
+              "outputVariable": {
+                "type": "string",
+                "description": "The path to the override value in the workflow context"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "OrderBy": {
         "required": [
@@ -26463,6 +26779,151 @@
           }
         }
       },
+      "PullRequest": {
+        "required": [
+          "dateOpened",
+          "entityCids",
+          "entityIds",
+          "isComplex",
+          "isDraft",
+          "isOld",
+          "isQuick",
+          "lastUpdated",
+          "numComments",
+          "numReviewers",
+          "pullRequest",
+          "repository",
+          "source",
+          "status"
+        ],
+        "type": "object",
+        "description": "Pull request authored by the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dateOpened": {
+                "type": "string",
+                "description": "Date the PR was opened"
+              },
+              "entityCids": {
+                "type": "array",
+                "description": "CIDs of entities associated with this PR",
+                "items": {
+                  "type": "string",
+                  "description": "CIDs of entities associated with this PR"
+                }
+              },
+              "entityIds": {
+                "type": "array",
+                "description": "IDs of entities associated with this PR",
+                "items": {
+                  "type": "integer",
+                  "description": "IDs of entities associated with this PR",
+                  "format": "int64"
+                }
+              },
+              "isComplex": {
+                "type": "boolean",
+                "description": "Whether the PR is considered complex"
+              },
+              "isDraft": {
+                "type": "boolean",
+                "description": "Whether the PR is a draft"
+              },
+              "isOld": {
+                "type": "boolean",
+                "description": "Whether the PR is considered old"
+              },
+              "isQuick": {
+                "type": "boolean",
+                "description": "Whether the PR is considered quick"
+              },
+              "lastUpdated": {
+                "type": "string",
+                "description": "Last update timestamp"
+              },
+              "numComments": {
+                "type": "integer",
+                "description": "Number of comments",
+                "format": "int32"
+              },
+              "numFilesChanged": {
+                "type": "integer",
+                "description": "Number of files changed",
+                "format": "int32"
+              },
+              "numLinesAdded": {
+                "type": "integer",
+                "description": "Number of lines added",
+                "format": "int32"
+              },
+              "numLinesDeleted": {
+                "type": "integer",
+                "description": "Number of lines deleted",
+                "format": "int32"
+              },
+              "numReviewers": {
+                "type": "integer",
+                "description": "Number of reviewers",
+                "format": "int32"
+              },
+              "pullRequest": {
+                "$ref": "#/components/schemas/PullRequestInfo"
+              },
+              "repository": {
+                "$ref": "#/components/schemas/RepositoryInfo"
+              },
+              "source": {
+                "type": "string",
+                "description": "Git provider (GitHub, GitLab, etc.)",
+                "enum": [
+                  "AZURE_DEVOPS",
+                  "BITBUCKET",
+                  "GITHUB",
+                  "GITLAB"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "description": "Review status",
+                "enum": [
+                  "APPROVED",
+                  "CHANGES_REQUESTED",
+                  "REVIEW_REQUIRED"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "PullRequestInfo": {
+        "required": [
+          "number",
+          "title",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "description": "PR number",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string",
+            "description": "PR title"
+          },
+          "url": {
+            "type": "string",
+            "description": "PR URL"
+          }
+        },
+        "description": "Pull request details"
+      },
       "QueryBuilderResult": {
         "required": [
           "queryDetails",
@@ -26504,7 +26965,26 @@
             "type": "array",
             "description": "List of column definitions describing each field in the result rows",
             "items": {
-              "$ref": "#/components/schemas/Column"
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/Attribute"
+                },
+                {
+                  "$ref": "#/components/schemas/EntityReference"
+                },
+                {
+                  "$ref": "#/components/schemas/MetricAggregate"
+                },
+                {
+                  "$ref": "#/components/schemas/MetricValue"
+                },
+                {
+                  "$ref": "#/components/schemas/TimeWindow"
+                },
+                {
+                  "$ref": "#/components/schemas/Url"
+                }
+              ]
             }
           }
         },
@@ -26569,25 +27049,22 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityGroupFilter": {
-            "$ref": "#/components/schemas/EntityGroupFilterDTO"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
-          },
-          "typeFilter": {
-            "$ref": "#/components/schemas/EntityTypeFilter"
+          {
+            "type": "object",
+            "properties": {
+              "entityGroupFilter": {
+                "$ref": "#/components/schemas/EntityGroupFilterDTO"
+              },
+              "typeFilter": {
+                "$ref": "#/components/schemas/EntityTypeFilter"
+              }
+            }
           }
-        }
+        ]
       },
       "Readiness": {
         "required": [
@@ -26603,6 +27080,34 @@
         "discriminator": {
           "propertyName": "type"
         }
+      },
+      "Ready": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Readiness"
+          }
+        ]
+      },
+      "Reference": {
+        "required": [
+          "path",
+          "type"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/VariableSource"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            }
+          }
+        ]
       },
       "RejectRuleExemptionRequest": {
         "required": [
@@ -26655,6 +27160,37 @@
           }
         }
       },
+      "RepositoryInfo": {
+        "required": [
+          "name",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "url": {
+            "type": "string",
+            "description": "Repository URL"
+          }
+        },
+        "description": "Repository details"
+      },
+      "RequestedReviews": {
+        "required": [
+          "placeholder"
+        ],
+        "type": "object",
+        "properties": {
+          "placeholder": {
+            "type": "boolean",
+            "description": "No additional parameters required - returns all review requests for the user"
+          }
+        },
+        "description": "Request for pull requests where the user is requested as a reviewer"
+      },
       "RestrictionPolicyRelationship": {
         "required": [
           "id",
@@ -26677,6 +27213,127 @@
           }
         },
         "description": "List of restriction policies for the workflow"
+      },
+      "ReviewRequest": {
+        "required": [
+          "dateOpened",
+          "entityCids",
+          "entityIds",
+          "isComplex",
+          "isDraft",
+          "isOld",
+          "isQuick",
+          "lastUpdated",
+          "numComments",
+          "numReviewers",
+          "pullRequest",
+          "repository",
+          "source",
+          "status"
+        ],
+        "type": "object",
+        "description": "Pull request where the user is requested as a reviewer",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dateOpened": {
+                "type": "string",
+                "description": "Date the PR was opened"
+              },
+              "entityCids": {
+                "type": "array",
+                "description": "CIDs of entities associated with this PR",
+                "items": {
+                  "type": "string",
+                  "description": "CIDs of entities associated with this PR"
+                }
+              },
+              "entityIds": {
+                "type": "array",
+                "description": "IDs of entities associated with this PR",
+                "items": {
+                  "type": "integer",
+                  "description": "IDs of entities associated with this PR",
+                  "format": "int64"
+                }
+              },
+              "isComplex": {
+                "type": "boolean",
+                "description": "Whether the PR is considered complex"
+              },
+              "isDraft": {
+                "type": "boolean",
+                "description": "Whether the PR is a draft"
+              },
+              "isOld": {
+                "type": "boolean",
+                "description": "Whether the PR is considered old"
+              },
+              "isQuick": {
+                "type": "boolean",
+                "description": "Whether the PR is considered quick"
+              },
+              "lastUpdated": {
+                "type": "string",
+                "description": "Last update timestamp"
+              },
+              "numComments": {
+                "type": "integer",
+                "description": "Number of comments",
+                "format": "int32"
+              },
+              "numFilesChanged": {
+                "type": "integer",
+                "description": "Number of files changed",
+                "format": "int32"
+              },
+              "numLinesAdded": {
+                "type": "integer",
+                "description": "Number of lines added",
+                "format": "int32"
+              },
+              "numLinesDeleted": {
+                "type": "integer",
+                "description": "Number of lines deleted",
+                "format": "int32"
+              },
+              "numReviewers": {
+                "type": "integer",
+                "description": "Number of reviewers",
+                "format": "int32"
+              },
+              "pullRequest": {
+                "$ref": "#/components/schemas/PullRequestInfo"
+              },
+              "repository": {
+                "$ref": "#/components/schemas/RepositoryInfo"
+              },
+              "source": {
+                "type": "string",
+                "description": "Git provider (GitHub, GitLab, etc.)",
+                "enum": [
+                  "AZURE_DEVOPS",
+                  "BITBUCKET",
+                  "GITHUB",
+                  "GITLAB"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "description": "Review status",
+                "enum": [
+                  "APPROVED",
+                  "CHANGES_REQUESTED",
+                  "REVIEW_REQUIRED"
+                ]
+              }
+            }
+          }
+        ]
       },
       "Role": {
         "required": [
@@ -26903,22 +27560,19 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityGroupFilter": {
-            "$ref": "#/components/schemas/EntityGroupFilterDTO"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "entityGroupFilter": {
+                "$ref": "#/components/schemas/EntityGroupFilterDTO"
+              }
+            }
           }
-        }
+        ]
       },
       "SaveCustomEventRequest": {
         "required": [
@@ -27049,6 +27703,41 @@
             "type": "number"
           }
         }
+      },
+      "Scorecard": {
+        "required": [
+          "draft",
+          "name",
+          "tag"
+        ],
+        "type": "object",
+        "description": "Scorecard associated with user\u0027s entities",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Scorecard description"
+              },
+              "draft": {
+                "type": "boolean",
+                "description": "Whether the scorecard is a draft"
+              },
+              "name": {
+                "type": "string",
+                "description": "Scorecard name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Scorecard tag"
+              }
+            }
+          }
+        ]
       },
       "ScorecardDescriptorResponse": {
         "required": [
@@ -27237,6 +27926,23 @@
             "type": "string"
           }
         }
+      },
+      "Scorecards": {
+        "required": [
+          "ownershipSource"
+        ],
+        "type": "object",
+        "properties": {
+          "ownershipSource": {
+            "type": "string",
+            "description": "Source of ownership (DIRECT, INHERITED, ALL)",
+            "enum": [
+              "DIRECT",
+              "TEAM_HIERARCHY"
+            ]
+          }
+        },
+        "description": "Request for scorecards associated with the user\u0027s entities"
       },
       "SecretResponse": {
         "required": [
@@ -27537,7 +28243,7 @@
             "type": "array",
             "description": "Queryable fields available directly on this source",
             "items": {
-              "$ref": "#/components/schemas/Attribute"
+              "$ref": "#/components/schemas/Attribute1"
             }
           },
           "description": {
@@ -27577,22 +28283,80 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityGroupFilter": {
-            "$ref": "#/components/schemas/EntityGroupFilterDTO"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityFilter"
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CQL_FILTER",
-              "SERVICE_FILTER",
-              "RESOURCE_FILTER",
-              "DOMAIN_FILTER",
-              "TEAM_FILTER",
-              "COMPOUND_FILTER"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "entityGroupFilter": {
+                "$ref": "#/components/schemas/EntityGroupFilterDTO"
+              }
+            }
           }
-        }
+        ]
+      },
+      "Tag": {
+        "required": [
+          "tag"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Identifier"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Team": {
+        "required": [
+          "cid",
+          "name",
+          "tag"
+        ],
+        "type": "object",
+        "description": "Team that the user belongs to",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cid": {
+                "type": "string",
+                "description": "Team CID"
+              },
+              "description": {
+                "type": "string",
+                "description": "Team description"
+              },
+              "members": {
+                "type": "array",
+                "description": "Team members (only populated if includeMembers is true)",
+                "items": {
+                  "$ref": "#/components/schemas/TeamMember"
+                }
+              },
+              "name": {
+                "type": "string",
+                "description": "Team name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Team tag"
+              }
+            }
+          }
+        ]
       },
       "TeamDetails": {
         "required": [
@@ -27848,41 +28612,19 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "catalogEntityTag": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TeamResponse"
           },
-          "cortexTeam": {
-            "$ref": "#/components/schemas/CortexTeamDetails"
-          },
-          "id": {
-            "type": "string"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+          {
+            "type": "object",
+            "properties": {
+              "cortexTeam": {
+                "$ref": "#/components/schemas/CortexTeamDetails"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "teamTag": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "TeamResponse.IDP": {
         "title": "IDP",
@@ -27898,41 +28640,46 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "catalogEntityTag": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TeamResponse"
           },
-          "id": {
-            "type": "string"
-          },
-          "idpGroup": {
-            "$ref": "#/components/schemas/IdpGroupDetailsResponse"
-          },
-          "isArchived": {
-            "type": "boolean"
-          },
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+          {
+            "type": "object",
+            "properties": {
+              "idpGroup": {
+                "$ref": "#/components/schemas/IdpGroupDetailsResponse"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "teamTag": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
+      },
+      "Teams": {
+        "required": [
+          "includeMembers",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "includeMembers": {
+            "type": "boolean",
+            "description": "Include team member details (name, email, description)"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number to return, 0-indexed. Default 0.",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
+            "format": "int32",
+            "example": 250
+          }
+        },
+        "description": "Request for teams the user belongs to"
       },
       "TeamsLink": {
         "required": [
@@ -28374,30 +29121,23 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "cortexTeam": {
-            "$ref": "#/components/schemas/CortexTeamDetails"
+        "description": "Use this request shape when updating a team entry whose memberships are manually maintained via API or the UI.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateTeamRequest"
           },
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+          {
+            "type": "object",
+            "properties": {
+              "cortexTeam": {
+                "$ref": "#/components/schemas/CortexTeamDetails"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "type": {
-            "type": "string"
           }
-        },
-        "description": "Use this request shape when updating a team entry whose memberships are manually maintained via API or the UI."
+        ]
       },
       "UpdateTeamRequest.IDP": {
         "title": "IDP",
@@ -28408,27 +29148,48 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "links": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeamsLink"
+        "description": "Use this request shape when updating a team entry whose memberships are synced with an Idp group, such as from Okta, Google Groups, Github Teams, Azure AD, etc.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateTeamRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/TeamMetadata"
-          },
-          "slackChannels": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlackChannel1"
-            }
-          },
-          "type": {
-            "type": "string"
           }
-        },
-        "description": "Use this request shape when updating a team entry whose memberships are synced with an Idp group, such as from Okta, Google Groups, Github Teams, Azure AD, etc."
+        ]
+      },
+      "Url": {
+        "required": [
+          "alias",
+          "attributeName",
+          "name",
+          "ordinal"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Column"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "attributeName": {
+                "type": "string",
+                "description": "Name of the attribute containing the URL"
+              },
+              "ordinal": {
+                "type": "integer",
+                "description": "Zero-based column position in the result data rows - use this to map column metadata to actual row data values",
+                "format": "int32"
+              }
+            }
+          }
+        ]
       },
       "User": {
         "required": [
@@ -28572,23 +29333,31 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "editable": {
-            "type": "boolean",
-            "description": "Whether the override is editable by the user. Defaults to `false`. If set to `true` it\u0027ll pause the execution of the workflow and wait for the user to provide the value"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InputOverride"
           },
-          "inputKey": {
-            "type": "string",
-            "description": "The input key to override"
-          },
-          "outputVariable": {
-            "type": "string",
-            "description": "The path to the override value in the workflow context"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "editable": {
+                "type": "boolean",
+                "description": "Whether the override is editable by the user. Defaults to `false`. If set to `true` it\u0027ll pause the execution of the workflow and wait for the user to provide the value"
+              },
+              "inputKey": {
+                "type": "string",
+                "description": "The input key to override"
+              },
+              "outputVariable": {
+                "type": "string",
+                "description": "The path to the override value in the workflow context"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "VariableAssignment": {
         "required": [
@@ -28602,7 +29371,14 @@
             "description": "The type of the variable"
           },
           "source": {
-            "$ref": "#/components/schemas/VariableSource"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JavaScript"
+              },
+              {
+                "$ref": "#/components/schemas/Reference"
+              }
+            ]
           }
         },
         "description": "The variables to set for the action"
@@ -28664,6 +29440,131 @@
             ]
           }
         }
+      },
+      "WorkItem": {
+        "required": [
+          "id",
+          "source",
+          "status",
+          "title",
+          "url"
+        ],
+        "type": "object",
+        "description": "Work item (Jira, Linear, Azure DevOps issue) assigned to the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string",
+                "description": "Work item alias/key"
+              },
+              "dueDate": {
+                "type": "string",
+                "description": "Due date",
+                "format": "date-time"
+              },
+              "id": {
+                "type": "string",
+                "description": "Work item ID"
+              },
+              "project": {
+                "$ref": "#/components/schemas/WorkItemProject"
+              },
+              "source": {
+                "type": "string",
+                "description": "Issue tracking system (Jira, Linear, Azure)",
+                "enum": [
+                  "AZURE_DEVOPS_WORK_ITEMS",
+                  "CLICKUP",
+                  "GITHUB",
+                  "JIRA"
+                ]
+              },
+              "status": {
+                "$ref": "#/components/schemas/WorkItemStatus"
+              },
+              "title": {
+                "type": "string",
+                "description": "Work item title"
+              },
+              "url": {
+                "type": "string",
+                "description": "URL to the work item"
+              }
+            }
+          }
+        ]
+      },
+      "WorkItemProject": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "url": {
+            "type": "string",
+            "description": "Project URL"
+          }
+        },
+        "description": "Work item project details"
+      },
+      "WorkItemStatus": {
+        "required": [
+          "statusBackgroundColor",
+          "statusIconColor",
+          "statusText",
+          "statusType"
+        ],
+        "type": "object",
+        "properties": {
+          "statusBackgroundColor": {
+            "type": "string",
+            "description": "Status background color"
+          },
+          "statusIconColor": {
+            "type": "string",
+            "description": "Status icon color"
+          },
+          "statusText": {
+            "type": "string",
+            "description": "Status text"
+          },
+          "statusType": {
+            "type": "string",
+            "description": "Status type"
+          }
+        },
+        "description": "Work item status information"
+      },
+      "WorkItems": {
+        "required": [
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Page number for pagination (0-indexed)",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Maximum number of work items to return",
+            "format": "int32",
+            "example": 50
+          }
+        },
+        "description": "Request for work items (Jira, Linear, Azure DevOps issues) assigned to the user"
       },
       "WorkflowAction": {
         "required": [
@@ -28775,23 +29676,31 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "actionIdentifier": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "inputs": {
+          {
             "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/JsonNode"
+            "properties": {
+              "actionIdentifier": {
+                "type": "string"
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonNode"
+                }
+              },
+              "integrationAlias": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "integrationAlias": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.AWS": {
         "title": "AWS",
@@ -28803,26 +29712,34 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "accountId": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "actionIdentifier": {
-            "type": "string"
-          },
-          "inputs": {
+          {
             "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/JsonNode"
+            "properties": {
+              "accountId": {
+                "type": "string"
+              },
+              "actionIdentifier": {
+                "type": "string"
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonNode"
+                }
+              },
+              "region": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "region": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.CONDITIONAL_BRANCH": {
         "title": "CONDITIONAL_BRANCH",
@@ -28831,25 +29748,33 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "branches": {
-            "type": "array",
-            "description": "The list of conditional branches that will be evaluated in order",
-            "items": {
-              "$ref": "#/components/schemas/Conditional"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "branches": {
+                "type": "array",
+                "description": "The list of conditional branches that will be evaluated in order",
+                "items": {
+                  "$ref": "#/components/schemas/Conditional"
+                }
+              },
+              "fallbackBranch": {
+                "$ref": "#/components/schemas/Fallback"
+              },
+              "joiningAction": {
+                "type": "string",
+                "description": "The joining action that will run after all branches"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "fallbackBranch": {
-            "$ref": "#/components/schemas/Fallback"
-          },
-          "joiningAction": {
-            "type": "string",
-            "description": "The joining action that will run after all branches"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.GITHUB_CREATE_OR_UPDATE_FILE": {
         "title": "GITHUB_CREATE_OR_UPDATE_FILE",
@@ -28862,41 +29787,49 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string",
-            "description": "The alias for the github configuration to be used"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "author": {
-            "$ref": "#/components/schemas/GithubAuthor"
-          },
-          "branch": {
-            "type": "string",
-            "description": "The branch in the repository where the changes will be applied (optional; defaults to the main branch if not specified)"
-          },
-          "commitMessage": {
-            "type": "string",
-            "description": "A message describing the purpose of the commit"
-          },
-          "committer": {
-            "$ref": "#/components/schemas/GithubCommitter"
-          },
-          "content": {
-            "type": "string",
-            "description": "The content of the file to be created or updated (not base64-encoded)"
-          },
-          "path": {
-            "type": "string",
-            "description": "The full path to the file within the repository"
-          },
-          "repositoryName": {
-            "type": "string",
-            "description": "The name of the repository where the file is being created or updated"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string",
+                "description": "The alias for the github configuration to be used"
+              },
+              "author": {
+                "$ref": "#/components/schemas/GithubAuthor"
+              },
+              "branch": {
+                "type": "string",
+                "description": "The branch in the repository where the changes will be applied (optional; defaults to the main branch if not specified)"
+              },
+              "commitMessage": {
+                "type": "string",
+                "description": "A message describing the purpose of the commit"
+              },
+              "committer": {
+                "$ref": "#/components/schemas/GithubCommitter"
+              },
+              "content": {
+                "type": "string",
+                "description": "The content of the file to be created or updated (not base64-encoded)"
+              },
+              "path": {
+                "type": "string",
+                "description": "The full path to the file within the repository"
+              },
+              "repositoryName": {
+                "type": "string",
+                "description": "The name of the repository where the file is being created or updated"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.HTTP_REQUEST": {
         "title": "HTTP_REQUEST",
@@ -28907,38 +29840,46 @@
           "url"
         ],
         "type": "object",
-        "properties": {
-          "headers": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
+          },
+          {
             "type": "object",
-            "additionalProperties": {
-              "type": "string",
-              "description": "The headers for the HTTP request"
-            },
-            "description": "The headers for the HTTP request"
-          },
-          "httpMethod": {
-            "type": "string",
-            "description": "The HTTP method for the request",
-            "enum": [
-              "GET",
-              "POST",
-              "PUT",
-              "DELETE",
-              "PATCH"
-            ]
-          },
-          "payload": {
-            "type": "string",
-            "description": "The payload for the request"
-          },
-          "type": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string",
-            "description": "The URL for the request"
+            "properties": {
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "description": "The headers for the HTTP request"
+                },
+                "description": "The headers for the HTTP request"
+              },
+              "httpMethod": {
+                "type": "string",
+                "description": "The HTTP method for the request",
+                "enum": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "PATCH"
+                ]
+              },
+              "payload": {
+                "type": "string",
+                "description": "The payload for the request"
+              },
+              "type": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "description": "The URL for the request"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.HTTP_REQUEST_ASYNC": {
         "title": "HTTP_REQUEST_ASYNC",
@@ -28949,43 +29890,51 @@
           "url"
         ],
         "type": "object",
-        "properties": {
-          "headers": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
+          },
+          {
             "type": "object",
-            "additionalProperties": {
-              "type": "string",
-              "description": "The headers for the HTTP request"
-            },
-            "description": "The headers for the HTTP request"
-          },
-          "httpMethod": {
-            "type": "string",
-            "description": "The HTTP method for the request",
-            "enum": [
-              "GET",
-              "POST",
-              "PUT",
-              "DELETE",
-              "PATCH"
-            ]
-          },
-          "payload": {
-            "type": "string",
-            "description": "The payload for the request"
-          },
-          "timeoutInSeconds": {
-            "type": "integer",
-            "description": "The timeout for the request in seconds",
-            "format": "int32"
-          },
-          "type": {
-            "type": "string"
-          },
-          "url": {
-            "type": "string",
-            "description": "The URL for the request"
+            "properties": {
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "description": "The headers for the HTTP request"
+                },
+                "description": "The headers for the HTTP request"
+              },
+              "httpMethod": {
+                "type": "string",
+                "description": "The HTTP method for the request",
+                "enum": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "DELETE",
+                  "PATCH"
+                ]
+              },
+              "payload": {
+                "type": "string",
+                "description": "The payload for the request"
+              },
+              "timeoutInSeconds": {
+                "type": "integer",
+                "description": "The timeout for the request in seconds",
+                "format": "int32"
+              },
+              "type": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "description": "The URL for the request"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.JAVASCRIPT": {
         "title": "JAVASCRIPT",
@@ -28994,15 +29943,23 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "script": {
-            "type": "string",
-            "description": "The JavaScript script for the action"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "script": {
+                "type": "string",
+                "description": "The JavaScript script for the action"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.JIRA_CREATE_ISSUE": {
         "title": "JIRA_CREATE_ISSUE",
@@ -29018,67 +29975,75 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string",
-            "description": "The alias for the Jira configuration that will be used."
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "assignee": {
-            "type": "string",
-            "description": "The identifier of the assignee for the Jira issue. This field is optional."
-          },
-          "components": {
-            "type": "array",
-            "description": "A list of components within the Jira project to which the issue belongs. This field is optional.",
-            "items": {
-              "type": "string",
-              "description": "A list of components within the Jira project to which the issue belongs. This field is optional."
-            }
-          },
-          "description": {
-            "type": "string",
-            "description": "A detailed description of the issue, providing more context about what needs to be addressed."
-          },
-          "fields": {
+          {
             "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
-            },
-            "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
-          },
-          "issueSummary": {
-            "type": "string",
-            "description": "A brief summary of the issue being created, typically representing the title of the issue."
-          },
-          "issueType": {
-            "type": "string",
-            "description": "The type of the issue being created, such as \u0027Bug\u0027, \u0027Task\u0027, or \u0027Story\u0027."
-          },
-          "labels": {
-            "type": "array",
-            "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional.",
-            "items": {
-              "type": "string",
-              "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional."
+            "properties": {
+              "alias": {
+                "type": "string",
+                "description": "The alias for the Jira configuration that will be used."
+              },
+              "assignee": {
+                "type": "string",
+                "description": "The identifier of the assignee for the Jira issue. This field is optional."
+              },
+              "components": {
+                "type": "array",
+                "description": "A list of components within the Jira project to which the issue belongs. This field is optional.",
+                "items": {
+                  "type": "string",
+                  "description": "A list of components within the Jira project to which the issue belongs. This field is optional."
+                }
+              },
+              "description": {
+                "type": "string",
+                "description": "A detailed description of the issue, providing more context about what needs to be addressed."
+              },
+              "fields": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
+                },
+                "description": "A map containing additional fields that are to be provided for the Jira issue, such as custom fields or extra attributes. This field is optional."
+              },
+              "issueSummary": {
+                "type": "string",
+                "description": "A brief summary of the issue being created, typically representing the title of the issue."
+              },
+              "issueType": {
+                "type": "string",
+                "description": "The type of the issue being created, such as \u0027Bug\u0027, \u0027Task\u0027, or \u0027Story\u0027."
+              },
+              "labels": {
+                "type": "array",
+                "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional.",
+                "items": {
+                  "type": "string",
+                  "description": "A list of labels or tags to categorize or highlight the Jira issue. This field is optional."
+                }
+              },
+              "priority": {
+                "type": "string",
+                "description": "The priority of the issue, such as \u0027High\u0027, \u0027Medium\u0027, or \u0027Low\u0027. This field is optional."
+              },
+              "projectKey": {
+                "type": "string",
+                "description": "The key of the Jira project where the issue will be created. Typically a short code like \u0027PROJ\u0027."
+              },
+              "reporter": {
+                "type": "string",
+                "description": "The identifier of the reporter who is raising the Jira issue. This field is optional."
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "priority": {
-            "type": "string",
-            "description": "The priority of the issue, such as \u0027High\u0027, \u0027Medium\u0027, or \u0027Low\u0027. This field is optional."
-          },
-          "projectKey": {
-            "type": "string",
-            "description": "The key of the Jira project where the issue will be created. Typically a short code like \u0027PROJ\u0027."
-          },
-          "reporter": {
-            "type": "string",
-            "description": "The identifier of the reporter who is raising the Jira issue. This field is optional."
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.JQ": {
         "title": "JQ",
@@ -29087,15 +30052,23 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "expression": {
-            "type": "string",
-            "description": "The JQ expression for the action"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "The JQ expression for the action"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.MANUAL_APPROVAL": {
         "title": "MANUAL_APPROVAL",
@@ -29104,23 +30077,31 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "approverDescription": {
-            "type": "string",
-            "description": "A description that will be shown to approvers"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "approvingTeamIds": {
-            "type": "array",
-            "description": "The IDs of the teams whose members can approve the action",
-            "items": {
-              "type": "string",
-              "description": "The IDs of the teams whose members can approve the action"
+          {
+            "type": "object",
+            "properties": {
+              "approverDescription": {
+                "type": "string",
+                "description": "A description that will be shown to approvers"
+              },
+              "approvingTeamIds": {
+                "type": "array",
+                "description": "The IDs of the teams whose members can approve the action",
+                "items": {
+                  "type": "string",
+                  "description": "The IDs of the teams whose members can approve the action"
+                }
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.MS_TEAMS_SEND_MESSAGE": {
         "title": "MS_TEAMS_SEND_MESSAGE",
@@ -29131,23 +30112,31 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "channelId": {
-            "type": "string",
-            "description": "The channel id to send the message to"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "message": {
-            "type": "string",
-            "description": "The message to send"
-          },
-          "teamId": {
-            "type": "string",
-            "description": "The team id to send the message to"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "channelId": {
+                "type": "string",
+                "description": "The channel id to send the message to"
+              },
+              "message": {
+                "type": "string",
+                "description": "The message to send"
+              },
+              "teamId": {
+                "type": "string",
+                "description": "The team id to send the message to"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.PAGERDUTY_CREATE_INCIDENT": {
         "title": "PAGERDUTY_CREATE_INCIDENT",
@@ -29160,39 +30149,47 @@
           "urgency"
         ],
         "type": "object",
-        "properties": {
-          "body": {
-            "type": "string",
-            "description": "The body of the incident"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "fromEmail": {
-            "type": "string",
-            "description": "The email address of a valid user associated with the account making the request"
-          },
-          "incidentTypeName": {
-            "type": "string",
-            "description": "The incident type name"
-          },
-          "serviceId": {
-            "type": "string",
-            "description": "The ID of the service to create the incident for"
-          },
-          "title": {
-            "type": "string",
-            "description": "The title of the incident"
-          },
-          "type": {
-            "type": "string"
-          },
-          "urgency": {
-            "type": "string",
-            "description": "The urgency of the incident",
-            "enum": [
-              "HIGH",
-              "LOW"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "body": {
+                "type": "string",
+                "description": "The body of the incident"
+              },
+              "fromEmail": {
+                "type": "string",
+                "description": "The email address of a valid user associated with the account making the request"
+              },
+              "incidentTypeName": {
+                "type": "string",
+                "description": "The incident type name"
+              },
+              "serviceId": {
+                "type": "string",
+                "description": "The ID of the service to create the incident for"
+              },
+              "title": {
+                "type": "string",
+                "description": "The title of the incident"
+              },
+              "type": {
+                "type": "string"
+              },
+              "urgency": {
+                "type": "string",
+                "description": "The urgency of the incident",
+                "enum": [
+                  "HIGH",
+                  "LOW"
+                ]
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.SCAFFOLDER": {
         "title": "SCAFFOLDER",
@@ -29202,30 +30199,38 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "createNewRepository": {
-            "type": "boolean",
-            "description": "Whether the scaffolder should create a new repository. Defaults to `true`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "createService": {
-            "type": "boolean",
-            "description": "Whether the cortex service should be created."
-          },
-          "inputOverrides": {
-            "type": "array",
-            "description": "The input overrides for the scaffolder",
-            "items": {
-              "$ref": "#/components/schemas/InputOverride"
+          {
+            "type": "object",
+            "properties": {
+              "createNewRepository": {
+                "type": "boolean",
+                "description": "Whether the scaffolder should create a new repository. Defaults to `true`"
+              },
+              "createService": {
+                "type": "boolean",
+                "description": "Whether the cortex service should be created."
+              },
+              "inputOverrides": {
+                "type": "array",
+                "description": "The input overrides for the scaffolder",
+                "items": {
+                  "$ref": "#/components/schemas/InputOverride"
+                }
+              },
+              "scaffolderTemplateId": {
+                "type": "string",
+                "description": "The ID of the scaffolder template"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "scaffolderTemplateId": {
-            "type": "string",
-            "description": "The ID of the scaffolder template"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowActionSchema.SET_VARIABLES": {
         "title": "SET_VARIABLES",
@@ -29234,18 +30239,26 @@
           "variables"
         ],
         "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "variables": {
-            "type": "array",
-            "description": "The variables to set for the action",
-            "items": {
-              "$ref": "#/components/schemas/VariableAssignment"
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "variables": {
+                "type": "array",
+                "description": "The variables to set for the action",
+                "items": {
+                  "$ref": "#/components/schemas/VariableAssignment"
+                }
+              }
             }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.SLACK": {
         "title": "SLACK",
@@ -29255,19 +30268,27 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "channel": {
-            "type": "string",
-            "description": "The channel name to send the message to, without the `#`. For example for `#general` use `general`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
           },
-          "message": {
-            "type": "string",
-            "description": "The message to send"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "channel": {
+                "type": "string",
+                "description": "The channel name to send the message to, without the `#`. For example for `#general` use `general`"
+              },
+              "message": {
+                "type": "string",
+                "description": "The message to send"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowActionSchema.USER_INPUT": {
         "title": "USER_INPUT",
@@ -29277,29 +30298,37 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "inputOverrides": {
-            "type": "array",
-            "description": "The list of overrides for the action inputs",
-            "items": {
-              "$ref": "#/components/schemas/InputOverride"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowActionSchema"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "inputOverrides": {
+                "type": "array",
+                "description": "The list of overrides for the action inputs",
+                "items": {
+                  "$ref": "#/components/schemas/InputOverride"
+                }
+              },
+              "inputs": {
+                "type": "array",
+                "description": "The list of inputs required for the action",
+                "items": {
+                  "$ref": "#/components/schemas/WorkflowInput"
+                }
+              },
+              "jsValidatorScript": {
+                "type": "string",
+                "description": "Optional JavaScript validator script to validate the provided inputs"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "inputs": {
-            "type": "array",
-            "description": "The list of inputs required for the action",
-            "items": {
-              "$ref": "#/components/schemas/WorkflowInput"
-            }
-          },
-          "jsValidatorScript": {
-            "type": "string",
-            "description": "Optional JavaScript validator script to validate the provided inputs"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowDefinition": {
         "required": [
@@ -29406,28 +30435,28 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "entityFilter": {
-            "$ref": "#/components/schemas/CompoundFilter"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowFilter"
           },
-          "ownershipScope": {
-            "type": "string",
-            "description": "The ownership scope for the workflow",
-            "enum": [
-              "ALL",
-              "OWNER",
-              "EDITOR"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "description": "The type of the workflow filter",
-            "enum": [
-              "GLOBAL",
-              "ENTITY"
-            ]
+          {
+            "type": "object",
+            "properties": {
+              "entityFilter": {
+                "$ref": "#/components/schemas/CompoundFilter"
+              },
+              "ownershipScope": {
+                "type": "string",
+                "description": "The ownership scope for the workflow",
+                "enum": [
+                  "ALL",
+                  "OWNER",
+                  "EDITOR"
+                ]
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowFilter.GLOBAL": {
         "title": "GLOBAL",
@@ -29435,16 +30464,11 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "The type of the workflow filter",
-            "enum": [
-              "GLOBAL",
-              "ENTITY"
-            ]
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowFilter"
           }
-        }
+        ]
       },
       "WorkflowInput": {
         "required": [
@@ -29523,50 +30547,58 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "allowMultiple": {
-            "type": "boolean",
-            "description": "Whether the input allows multiple values. Defaults to `false`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "defaultValue": {
-            "type": "array",
-            "description": "The default value for the input",
-            "items": {
-              "type": "string",
-              "description": "The default value for the input"
+          {
+            "type": "object",
+            "properties": {
+              "allowMultiple": {
+                "type": "boolean",
+                "description": "Whether the input allows multiple values. Defaults to `false`"
+              },
+              "defaultValue": {
+                "type": "array",
+                "description": "The default value for the input",
+                "items": {
+                  "type": "string",
+                  "description": "The default value for the input"
+                }
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "entityFilter": {
+                "$ref": "#/components/schemas/WorkflowInputEntityFilter"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "shouldDisplayOptionsAsHierarchy": {
+                "type": "boolean",
+                "description": "Whether the options should be displayed as a hierarchy. Defaults to `false`"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "entityFilter": {
-            "$ref": "#/components/schemas/WorkflowInputEntityFilter"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "shouldDisplayOptionsAsHierarchy": {
-            "type": "boolean",
-            "description": "Whether the options should be displayed as a hierarchy. Defaults to `false`"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowInput.CORTEX_USER_FIELD": {
         "title": "CORTEX_USER_FIELD",
@@ -29579,45 +30611,53 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "allowMultiple": {
-            "type": "boolean",
-            "description": "Whether the input allows multiple values. Defaults to `false`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "defaultValue": {
-            "type": "array",
-            "description": "The default value for the input",
-            "items": {
-              "$ref": "#/components/schemas/CortexUserIdentity"
+          {
+            "type": "object",
+            "properties": {
+              "allowMultiple": {
+                "type": "boolean",
+                "description": "Whether the input allows multiple values. Defaults to `false`"
+              },
+              "defaultValue": {
+                "type": "array",
+                "description": "The default value for the input",
+                "items": {
+                  "$ref": "#/components/schemas/CortexUserIdentity"
+                }
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "filter": {
+                "$ref": "#/components/schemas/WorkflowInputUserFilter"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "filter": {
-            "$ref": "#/components/schemas/WorkflowInputUserFilter"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowInput.DATE_FIELD": {
         "title": "DATE_FIELD",
@@ -29630,47 +30670,55 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "defaultValue": {
-            "type": "string",
-            "description": "The default value for the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "disabled": {
-            "type": "boolean",
-            "description": "Whether the input should be disabled"
-          },
-          "format": {
-            "type": "string",
-            "description": "The date format of the input",
-            "enum": [
-              "DATE",
-              "DATETIME"
-            ]
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "defaultValue": {
+                "type": "string",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "disabled": {
+                "type": "boolean",
+                "description": "Whether the input should be disabled"
+              },
+              "format": {
+                "type": "string",
+                "description": "The date format of the input",
+                "enum": [
+                  "DATE",
+                  "DATETIME"
+                ]
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInput.INPUT_FIELD": {
         "title": "INPUT_FIELD",
@@ -29681,39 +30729,47 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "defaultValue": {
-            "type": "string",
-            "description": "The default value for the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
-          },
-          "validationRegex": {
-            "type": "string",
-            "description": "The validation regex for the input"
+          {
+            "type": "object",
+            "properties": {
+              "defaultValue": {
+                "type": "string",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              },
+              "validationRegex": {
+                "type": "string",
+                "description": "The validation regex for the input"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInput.MULTISELECT_FIELD": {
         "title": "MULTISELECT_FIELD",
@@ -29726,59 +30782,67 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "allowAdditionalOptions": {
-            "type": "boolean",
-            "description": "Whether additional options are allowed. Defaults to `false`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "defaultValue": {
-            "type": "array",
-            "description": "The default value for the input",
-            "items": {
-              "type": "string",
-              "description": "The default value for the input"
+          {
+            "type": "object",
+            "properties": {
+              "allowAdditionalOptions": {
+                "type": "boolean",
+                "description": "Whether additional options are allowed. Defaults to `false`"
+              },
+              "defaultValue": {
+                "type": "array",
+                "description": "The default value for the input",
+                "items": {
+                  "type": "string",
+                  "description": "The default value for the input"
+                }
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "options": {
+                "type": "array",
+                "description": "The list of options for the input",
+                "items": {
+                  "type": "string",
+                  "description": "The list of options for the input"
+                }
+              },
+              "optionsLabels": {
+                "type": "array",
+                "description": "The list of labels for the options. If not provided, the options will be used as labels",
+                "items": {
+                  "type": "string",
+                  "description": "The list of labels for the options. If not provided, the options will be used as labels"
+                }
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder value for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "options": {
-            "type": "array",
-            "description": "The list of options for the input",
-            "items": {
-              "type": "string",
-              "description": "The list of options for the input"
-            }
-          },
-          "optionsLabels": {
-            "type": "array",
-            "description": "The list of labels for the options. If not provided, the options will be used as labels",
-            "items": {
-              "type": "string",
-              "description": "The list of labels for the options. If not provided, the options will be used as labels"
-            }
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder value for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowInput.NUMBER_FIELD": {
         "title": "NUMBER_FIELD",
@@ -29791,55 +30855,63 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "defaultValue": {
-            "type": "number",
-            "description": "The default value for the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "disabled": {
-            "type": "boolean",
-            "description": "Whether the input should be disabled"
-          },
-          "format": {
-            "type": "string",
-            "description": "The number format of the input",
-            "enum": [
-              "INTEGER",
-              "DECIMAL"
-            ]
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "max": {
-            "type": "number",
-            "description": "The maximum value of the input"
-          },
-          "min": {
-            "type": "number",
-            "description": "The minimum value of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "defaultValue": {
+                "type": "number",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "disabled": {
+                "type": "boolean",
+                "description": "Whether the input should be disabled"
+              },
+              "format": {
+                "type": "string",
+                "description": "The number format of the input",
+                "enum": [
+                  "INTEGER",
+                  "DECIMAL"
+                ]
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "max": {
+                "type": "number",
+                "description": "The maximum value of the input"
+              },
+              "min": {
+                "type": "number",
+                "description": "The minimum value of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInput.SECRET_FIELD": {
         "title": "SECRET_FIELD",
@@ -29851,39 +30923,47 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "disabled": {
-            "type": "boolean",
-            "description": "Whether the input should be disabled"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
-          },
-          "validationRegex": {
-            "type": "string",
-            "description": "The validation regex for the input"
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "disabled": {
+                "type": "boolean",
+                "description": "Whether the input should be disabled"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              },
+              "validationRegex": {
+                "type": "string",
+                "description": "The validation regex for the input"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInput.SELECT_FIELD": {
         "title": "SELECT_FIELD",
@@ -29896,55 +30976,63 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "allowAdditionalOptions": {
-            "type": "boolean",
-            "description": "Whether additional options are allowed. Defaults to `false`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "defaultValue": {
-            "type": "string",
-            "description": "The default value for the input"
-          },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "options": {
-            "type": "array",
-            "description": "The list of options for the input",
-            "items": {
-              "type": "string",
-              "description": "The list of options for the input"
+          {
+            "type": "object",
+            "properties": {
+              "allowAdditionalOptions": {
+                "type": "boolean",
+                "description": "Whether additional options are allowed. Defaults to `false`"
+              },
+              "defaultValue": {
+                "type": "string",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "options": {
+                "type": "array",
+                "description": "The list of options for the input",
+                "items": {
+                  "type": "string",
+                  "description": "The list of options for the input"
+                }
+              },
+              "optionsLabels": {
+                "type": "array",
+                "description": "The list of labels for the options. If not provided, the options will be used as labels",
+                "items": {
+                  "type": "string",
+                  "description": "The list of labels for the options. If not provided, the options will be used as labels"
+                }
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder value for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "optionsLabels": {
-            "type": "array",
-            "description": "The list of labels for the options. If not provided, the options will be used as labels",
-            "items": {
-              "type": "string",
-              "description": "The list of labels for the options. If not provided, the options will be used as labels"
-            }
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder value for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowInput.SLACK_FIELD": {
         "title": "SLACK_FIELD",
@@ -29957,46 +31045,54 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "allowMultiple": {
-            "type": "boolean",
-            "description": "Whether the input allows multiple values. Defaults to `false`"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "defaultValue": {
-            "type": "array",
-            "description": "The default value for the input",
-            "items": {
-              "type": "string",
-              "description": "The default value for the input"
+          {
+            "type": "object",
+            "properties": {
+              "allowMultiple": {
+                "type": "boolean",
+                "description": "Whether the input allows multiple values. Defaults to `false`"
+              },
+              "defaultValue": {
+                "type": "array",
+                "description": "The default value for the input",
+                "items": {
+                  "type": "string",
+                  "description": "The default value for the input"
+                }
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "filter": {
+                "$ref": "#/components/schemas/WorkflowInputSlackFilter"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
             }
-          },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "filter": {
-            "$ref": "#/components/schemas/WorkflowInputSlackFilter"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
           }
-        }
+        ]
       },
       "WorkflowInput.TEXTAREA_FIELD": {
         "title": "TEXTAREA_FIELD",
@@ -30007,39 +31103,47 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "defaultValue": {
-            "type": "string",
-            "description": "The default value for the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "placeholder": {
-            "type": "string",
-            "description": "The placeholder for the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
-          },
-          "validationRegex": {
-            "type": "string",
-            "description": "The validation regex for the input"
+          {
+            "type": "object",
+            "properties": {
+              "defaultValue": {
+                "type": "string",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "placeholder": {
+                "type": "string",
+                "description": "The placeholder for the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              },
+              "validationRegex": {
+                "type": "string",
+                "description": "The validation regex for the input"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInput.TOGGLE_FIELD": {
         "title": "TOGGLE_FIELD",
@@ -30050,31 +31154,39 @@
           "type"
         ],
         "type": "object",
-        "properties": {
-          "defaultValue": {
-            "type": "boolean",
-            "description": "The default value for the input"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WorkflowInput"
           },
-          "description": {
-            "type": "string",
-            "description": "The description of the input"
-          },
-          "key": {
-            "type": "string",
-            "description": "The key of the input"
-          },
-          "name": {
-            "type": "string",
-            "description": "The name of the input"
-          },
-          "required": {
-            "type": "boolean",
-            "description": "Whether the input is required"
-          },
-          "type": {
-            "type": "string"
+          {
+            "type": "object",
+            "properties": {
+              "defaultValue": {
+                "type": "boolean",
+                "description": "The default value for the input"
+              },
+              "description": {
+                "type": "string",
+                "description": "The description of the input"
+              },
+              "key": {
+                "type": "string",
+                "description": "The key of the input"
+              },
+              "name": {
+                "type": "string",
+                "description": "The name of the input"
+              },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the input is required"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
       },
       "WorkflowInputEntityFilter": {
         "type": "object",

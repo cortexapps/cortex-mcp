@@ -81,6 +81,9 @@
       "name": "Initiatives"
     },
     {
+      "name": "My Workspace"
+    },
+    {
       "name": "Notification Logs"
     },
     {
@@ -12296,6 +12299,64 @@
         "x-cortex-mcp-enabled": "false"
       }
     },
+    "/api/v1/mcp/my/workspace": {
+      "post": {
+        "description": "Retrieve various types of resources owned by or assigned to the current user",
+        "operationId": "getMyWorkspace",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MyWorkspaceRequestWrapper"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved resources"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Invalid resource type or parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyWorkspaceResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        },
+        "summary": "Get resources for the authenticated user",
+        "tags": [
+          "My Workspace"
+        ],
+        "x-cortex-mcp-description": "TOOL for retrieving current user\u0027s owned resources and work items across the Cortex workspace.\n\n        FLEXIBLE REQUEST STRUCTURE:\n        The request accepts an object with optional fields for each resource type:\n        - myEntitiesRequest: Fetch entities (services, resources, domains) owned by the user\n        - myTeamsRequest: Fetch teams the user belongs to\n        - myScorecardsRequest: Fetch scorecards associated with user\u0027s entities\n        - myOpenPRsRequest: Fetch user\u0027s open pull requests across all Git repositories\n        - myRequestedReviewsRequest: Fetch PRs where user is requested as a reviewer\n        - myWorkItemsRequest: Fetch work items (Jira, Linear, Azure DevOps) assigned to the user\n\n        Set one or more fields to fetch multiple resource types in a single call.\n        All results are combined into a single response array with mixed item types.\n\n        RESPONSE STRUCTURE:\n        Returns a single array of items where each item has an \u0027itemType\u0027 field indicating its type:\n        - \u0027entity\u0027: Catalog entities (services, resources, domains)\n        - \u0027team\u0027: Teams the user belongs to\n        - \u0027scorecard\u0027: Scorecards for user\u0027s entities\n        - \u0027pull_request\u0027: Open pull requests authored by the user\n        - \u0027review_request\u0027: Pull requests where user is requested as reviewer\n        - \u0027work_item\u0027: Work items (issues/tickets) assigned to the user\n\n        EXAMPLES:\n        1. Fetch only services:\n           {\"myEntitiesRequest\": {\"entityTypes\": [\"service\"]}}\n\n        2. Fetch teams and their entities:\n           {\"myTeamsRequest\": {\"includeMembers\": true}, \"myEntitiesRequest\": {}}\n\n        3. Get all work (PRs, reviews, Jira tickets):\n           {\"myOpenPRsRequest\": {}, \"myRequestedReviewsRequest\": {}, \"myWorkItemsRequest\": {}}\n\n        4. Search entities with filters:\n           {\"myEntitiesRequest\": {\"query\": \"payment\", \"ownershipSource\": \"DIRECT\", \"entityTypes\": [\"service\", \"resource\"]}}\n        ",
+        "x-cortex-mcp-enabled": "true",
+        "x-internal": true
+      }
+    },
     "/api/v1/newrelic/configuration": {
       "post": {
         "operationId": "NewRelicSaveConfiguration",
@@ -12930,9 +12991,7 @@
                 "enum": [
                   "USER_UNSUBSCRIBED",
                   "WORKSPACE_DISABLED",
-                  "TEAM_MEMBER_DISABLED",
                   "CHANNEL_DISABLED",
-                  "SCORECARD_DISABLED",
                   "DUPLICATE",
                   "CORTEX_EMPLOYEE",
                   "NON_CORTEX_USERS_DISABLED",
@@ -12955,7 +13014,6 @@
                   "MEMBER_EMAILS_NOT_FOUND",
                   "MISSING_CONTENT",
                   "CLIENT_ERROR",
-                  "UNEXPECTED_ERROR",
                   "BACKSTAGE_BASE_URL_MISSING",
                   "NO_SEATS_LEFT"
                 ]
@@ -13162,7 +13220,6 @@
                 "enum": [
                   "PACKET_GENERATOR_ERROR",
                   "CONTEXT_RESOLUTION_ERROR",
-                  "MISSING_RECIPIENTS",
                   "INTERNAL_ERROR"
                 ]
               }
@@ -13171,11 +13228,7 @@
           {
             "description": "A search query to filter the results.",
             "in": "query",
-            "name": "searchQuery",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
+            "name": "searchQuery"
           },
           {
             "description": "Whether to include the objects associated with the notification run.",
@@ -13207,6 +13260,15 @@
             "schema": {
               "type": "string",
               "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "deliveredOnly",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
             }
           },
           {
@@ -22053,6 +22115,101 @@
         },
         "description": "Emphasized rules for the Initiative. Either emphasized levels or rules must be provided"
       },
+      "Entities": {
+        "required": [
+          "includeArchived",
+          "ownershipSource",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "entityTypes": {
+            "type": "array",
+            "description": "Filter by entity types",
+            "example": [
+              "service",
+              "resource",
+              "domain"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Filter by entity types",
+              "example": "[\"service\",\"resource\",\"domain\"]"
+            }
+          },
+          "includeArchived": {
+            "type": "boolean",
+            "description": "Include archived entities"
+          },
+          "ownershipSource": {
+            "type": "string",
+            "description": "Source of ownership (DIRECT, INHERITED, ALL)",
+            "enum": [
+              "DIRECT",
+              "TEAM_HIERARCHY"
+            ]
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number to return, 0-indexed. Default 0.",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
+            "format": "int32",
+            "example": 250
+          },
+          "query": {
+            "type": "string",
+            "description": "Optional search query to filter entities by name or other properties"
+          }
+        },
+        "description": "Request for all entities (services, resources, domains) owned by the user"
+      },
+      "Entity": {
+        "required": [
+          "archived",
+          "cid",
+          "name",
+          "tag",
+          "type"
+        ],
+        "type": "object",
+        "description": "Catalog entity (service, resource, or domain) owned by the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "archived": {
+                "type": "boolean",
+                "description": "Whether the entity is archived"
+              },
+              "cid": {
+                "type": "string",
+                "description": "Entity CID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Entity name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Entity tag"
+              },
+              "type": {
+                "type": "string",
+                "description": "Entity type (service, resource, domain)"
+              }
+            }
+          }
+        ]
+      },
       "EntityCIDListResponse": {
         "required": [
           "ids",
@@ -23449,8 +23606,7 @@
         "properties": {
           "provider": {
             "type": "string",
-            "description": "Name of the Git provider",
-            "example": "GITHUB",
+            "description": "Git provider (GitHub, GitLab, etc.)",
             "enum": [
               "AZURE_DEVOPS",
               "BITBUCKET",
@@ -25245,6 +25401,89 @@
           }
         }
       },
+      "MyWorkspaceItem": {
+        "required": [
+          "itemType"
+        ],
+        "type": "object",
+        "properties": {
+          "itemType": {
+            "type": "string"
+          }
+        },
+        "description": "Item returned in My Workspace response - type varies by resourceType",
+        "discriminator": {
+          "mapping": {
+            "entity": "#/components/schemas/Entity",
+            "pull_request": "#/components/schemas/PullRequest",
+            "review_request": "#/components/schemas/ReviewRequest",
+            "scorecard": "#/components/schemas/Scorecard",
+            "team": "#/components/schemas/Team",
+            "work_item": "#/components/schemas/WorkItem"
+          },
+          "propertyName": "itemType"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Entity"
+          },
+          {
+            "$ref": "#/components/schemas/Team"
+          },
+          {
+            "$ref": "#/components/schemas/Scorecard"
+          },
+          {
+            "$ref": "#/components/schemas/PullRequest"
+          },
+          {
+            "$ref": "#/components/schemas/ReviewRequest"
+          },
+          {
+            "$ref": "#/components/schemas/WorkItem"
+          }
+        ]
+      },
+      "MyWorkspaceRequestWrapper": {
+        "type": "object",
+        "properties": {
+          "myEntitiesRequest": {
+            "$ref": "#/components/schemas/Entities"
+          },
+          "myOpenPRsRequest": {
+            "$ref": "#/components/schemas/OpenPRs"
+          },
+          "myRequestedReviewsRequest": {
+            "$ref": "#/components/schemas/RequestedReviews"
+          },
+          "myScorecardsRequest": {
+            "$ref": "#/components/schemas/Scorecards"
+          },
+          "myTeamsRequest": {
+            "$ref": "#/components/schemas/Teams"
+          },
+          "myWorkItemsRequest": {
+            "$ref": "#/components/schemas/WorkItems"
+          }
+        },
+        "description": "\n        Request wrapper for fetching user\u0027s workspace. Supports fetching multiple resource types in a single call.\n        Set one or more of the request fields to fetch the corresponding resources. Results will be combined into a single response.\n\n        Examples:\n        - Fetch entities only: {\"myEntitiesRequest\": {\"ownershipSource\": \"DIRECT\", \"entityTypes\": [\"service\"]}}\n        - Fetch teams only: {\"myTeamsRequest\": {\"includeMembers\": true}}\n        - Fetch both entities and teams: {\"myEntitiesRequest\": {...}, \"myTeamsRequest\": {...}}\n    "
+      },
+      "MyWorkspaceResponse": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "Mixed array of resources. Each item\u0027s type is indicated by its \u0027itemType\u0027 field.",
+            "items": {
+              "$ref": "#/components/schemas/MyWorkspaceItem"
+            }
+          }
+        },
+        "description": "Unified response containing workspace resources of various types (entities, teams, scorecards, etc.)"
+      },
       "NEWRELIC": {
         "required": [
           "id"
@@ -25433,7 +25672,6 @@
               "MEMBER_EMAILS_NOT_FOUND",
               "MISSING_CONTENT",
               "CLIENT_ERROR",
-              "UNEXPECTED_ERROR",
               "BACKSTAGE_BASE_URL_MISSING",
               "NO_SEATS_LEFT"
             ]
@@ -25449,9 +25687,7 @@
             "enum": [
               "USER_UNSUBSCRIBED",
               "WORKSPACE_DISABLED",
-              "TEAM_MEMBER_DISABLED",
               "CHANNEL_DISABLED",
-              "SCORECARD_DISABLED",
               "DUPLICATE",
               "CORTEX_EMPLOYEE",
               "NON_CORTEX_USERS_DISABLED",
@@ -25655,7 +25891,6 @@
             "enum": [
               "PACKET_GENERATOR_ERROR",
               "CONTEXT_RESOLUTION_ERROR",
-              "MISSING_RECIPIENTS",
               "INTERNAL_ERROR"
             ]
           },
@@ -25935,6 +26170,19 @@
             }
           }
         }
+      },
+      "OpenPRs": {
+        "required": [
+          "placeholder"
+        ],
+        "type": "object",
+        "properties": {
+          "placeholder": {
+            "type": "boolean",
+            "description": "No additional parameters required - returns all open PRs for the user"
+          }
+        },
+        "description": "Request for user\u0027s open pull requests across all Git repositories"
       },
       "Option": {
         "required": [
@@ -26531,6 +26779,151 @@
           }
         }
       },
+      "PullRequest": {
+        "required": [
+          "dateOpened",
+          "entityCids",
+          "entityIds",
+          "isComplex",
+          "isDraft",
+          "isOld",
+          "isQuick",
+          "lastUpdated",
+          "numComments",
+          "numReviewers",
+          "pullRequest",
+          "repository",
+          "source",
+          "status"
+        ],
+        "type": "object",
+        "description": "Pull request authored by the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dateOpened": {
+                "type": "string",
+                "description": "Date the PR was opened"
+              },
+              "entityCids": {
+                "type": "array",
+                "description": "CIDs of entities associated with this PR",
+                "items": {
+                  "type": "string",
+                  "description": "CIDs of entities associated with this PR"
+                }
+              },
+              "entityIds": {
+                "type": "array",
+                "description": "IDs of entities associated with this PR",
+                "items": {
+                  "type": "integer",
+                  "description": "IDs of entities associated with this PR",
+                  "format": "int64"
+                }
+              },
+              "isComplex": {
+                "type": "boolean",
+                "description": "Whether the PR is considered complex"
+              },
+              "isDraft": {
+                "type": "boolean",
+                "description": "Whether the PR is a draft"
+              },
+              "isOld": {
+                "type": "boolean",
+                "description": "Whether the PR is considered old"
+              },
+              "isQuick": {
+                "type": "boolean",
+                "description": "Whether the PR is considered quick"
+              },
+              "lastUpdated": {
+                "type": "string",
+                "description": "Last update timestamp"
+              },
+              "numComments": {
+                "type": "integer",
+                "description": "Number of comments",
+                "format": "int32"
+              },
+              "numFilesChanged": {
+                "type": "integer",
+                "description": "Number of files changed",
+                "format": "int32"
+              },
+              "numLinesAdded": {
+                "type": "integer",
+                "description": "Number of lines added",
+                "format": "int32"
+              },
+              "numLinesDeleted": {
+                "type": "integer",
+                "description": "Number of lines deleted",
+                "format": "int32"
+              },
+              "numReviewers": {
+                "type": "integer",
+                "description": "Number of reviewers",
+                "format": "int32"
+              },
+              "pullRequest": {
+                "$ref": "#/components/schemas/PullRequestInfo"
+              },
+              "repository": {
+                "$ref": "#/components/schemas/RepositoryInfo"
+              },
+              "source": {
+                "type": "string",
+                "description": "Git provider (GitHub, GitLab, etc.)",
+                "enum": [
+                  "AZURE_DEVOPS",
+                  "BITBUCKET",
+                  "GITHUB",
+                  "GITLAB"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "description": "Review status",
+                "enum": [
+                  "APPROVED",
+                  "CHANGES_REQUESTED",
+                  "REVIEW_REQUIRED"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "PullRequestInfo": {
+        "required": [
+          "number",
+          "title",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "description": "PR number",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string",
+            "description": "PR title"
+          },
+          "url": {
+            "type": "string",
+            "description": "PR URL"
+          }
+        },
+        "description": "Pull request details"
+      },
       "QueryBuilderResult": {
         "required": [
           "queryDetails",
@@ -26767,6 +27160,37 @@
           }
         }
       },
+      "RepositoryInfo": {
+        "required": [
+          "name",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "url": {
+            "type": "string",
+            "description": "Repository URL"
+          }
+        },
+        "description": "Repository details"
+      },
+      "RequestedReviews": {
+        "required": [
+          "placeholder"
+        ],
+        "type": "object",
+        "properties": {
+          "placeholder": {
+            "type": "boolean",
+            "description": "No additional parameters required - returns all review requests for the user"
+          }
+        },
+        "description": "Request for pull requests where the user is requested as a reviewer"
+      },
       "RestrictionPolicyRelationship": {
         "required": [
           "id",
@@ -26789,6 +27213,127 @@
           }
         },
         "description": "List of restriction policies for the workflow"
+      },
+      "ReviewRequest": {
+        "required": [
+          "dateOpened",
+          "entityCids",
+          "entityIds",
+          "isComplex",
+          "isDraft",
+          "isOld",
+          "isQuick",
+          "lastUpdated",
+          "numComments",
+          "numReviewers",
+          "pullRequest",
+          "repository",
+          "source",
+          "status"
+        ],
+        "type": "object",
+        "description": "Pull request where the user is requested as a reviewer",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dateOpened": {
+                "type": "string",
+                "description": "Date the PR was opened"
+              },
+              "entityCids": {
+                "type": "array",
+                "description": "CIDs of entities associated with this PR",
+                "items": {
+                  "type": "string",
+                  "description": "CIDs of entities associated with this PR"
+                }
+              },
+              "entityIds": {
+                "type": "array",
+                "description": "IDs of entities associated with this PR",
+                "items": {
+                  "type": "integer",
+                  "description": "IDs of entities associated with this PR",
+                  "format": "int64"
+                }
+              },
+              "isComplex": {
+                "type": "boolean",
+                "description": "Whether the PR is considered complex"
+              },
+              "isDraft": {
+                "type": "boolean",
+                "description": "Whether the PR is a draft"
+              },
+              "isOld": {
+                "type": "boolean",
+                "description": "Whether the PR is considered old"
+              },
+              "isQuick": {
+                "type": "boolean",
+                "description": "Whether the PR is considered quick"
+              },
+              "lastUpdated": {
+                "type": "string",
+                "description": "Last update timestamp"
+              },
+              "numComments": {
+                "type": "integer",
+                "description": "Number of comments",
+                "format": "int32"
+              },
+              "numFilesChanged": {
+                "type": "integer",
+                "description": "Number of files changed",
+                "format": "int32"
+              },
+              "numLinesAdded": {
+                "type": "integer",
+                "description": "Number of lines added",
+                "format": "int32"
+              },
+              "numLinesDeleted": {
+                "type": "integer",
+                "description": "Number of lines deleted",
+                "format": "int32"
+              },
+              "numReviewers": {
+                "type": "integer",
+                "description": "Number of reviewers",
+                "format": "int32"
+              },
+              "pullRequest": {
+                "$ref": "#/components/schemas/PullRequestInfo"
+              },
+              "repository": {
+                "$ref": "#/components/schemas/RepositoryInfo"
+              },
+              "source": {
+                "type": "string",
+                "description": "Git provider (GitHub, GitLab, etc.)",
+                "enum": [
+                  "AZURE_DEVOPS",
+                  "BITBUCKET",
+                  "GITHUB",
+                  "GITLAB"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "description": "Review status",
+                "enum": [
+                  "APPROVED",
+                  "CHANGES_REQUESTED",
+                  "REVIEW_REQUIRED"
+                ]
+              }
+            }
+          }
+        ]
       },
       "Role": {
         "required": [
@@ -27159,6 +27704,41 @@
           }
         }
       },
+      "Scorecard": {
+        "required": [
+          "draft",
+          "name",
+          "tag"
+        ],
+        "type": "object",
+        "description": "Scorecard associated with user\u0027s entities",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Scorecard description"
+              },
+              "draft": {
+                "type": "boolean",
+                "description": "Whether the scorecard is a draft"
+              },
+              "name": {
+                "type": "string",
+                "description": "Scorecard name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Scorecard tag"
+              }
+            }
+          }
+        ]
+      },
       "ScorecardDescriptorResponse": {
         "required": [
           "scorecard"
@@ -27346,6 +27926,23 @@
             "type": "string"
           }
         }
+      },
+      "Scorecards": {
+        "required": [
+          "ownershipSource"
+        ],
+        "type": "object",
+        "properties": {
+          "ownershipSource": {
+            "type": "string",
+            "description": "Source of ownership (DIRECT, INHERITED, ALL)",
+            "enum": [
+              "DIRECT",
+              "TEAM_HIERARCHY"
+            ]
+          }
+        },
+        "description": "Request for scorecards associated with the user\u0027s entities"
       },
       "SecretResponse": {
         "required": [
@@ -27719,6 +28316,48 @@
           }
         ]
       },
+      "Team": {
+        "required": [
+          "cid",
+          "name",
+          "tag"
+        ],
+        "type": "object",
+        "description": "Team that the user belongs to",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cid": {
+                "type": "string",
+                "description": "Team CID"
+              },
+              "description": {
+                "type": "string",
+                "description": "Team description"
+              },
+              "members": {
+                "type": "array",
+                "description": "Team members (only populated if includeMembers is true)",
+                "items": {
+                  "$ref": "#/components/schemas/TeamMember"
+                }
+              },
+              "name": {
+                "type": "string",
+                "description": "Team name"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Team tag"
+              }
+            }
+          }
+        ]
+      },
       "TeamDetails": {
         "required": [
           "id",
@@ -28014,6 +28653,33 @@
             }
           }
         ]
+      },
+      "Teams": {
+        "required": [
+          "includeMembers",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "includeMembers": {
+            "type": "boolean",
+            "description": "Include team member details (name, email, description)"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number to return, 0-indexed. Default 0.",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
+            "format": "int32",
+            "example": 250
+          }
+        },
+        "description": "Request for teams the user belongs to"
       },
       "TeamsLink": {
         "required": [
@@ -28774,6 +29440,131 @@
             ]
           }
         }
+      },
+      "WorkItem": {
+        "required": [
+          "id",
+          "source",
+          "status",
+          "title",
+          "url"
+        ],
+        "type": "object",
+        "description": "Work item (Jira, Linear, Azure DevOps issue) assigned to the user",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MyWorkspaceItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string",
+                "description": "Work item alias/key"
+              },
+              "dueDate": {
+                "type": "string",
+                "description": "Due date",
+                "format": "date-time"
+              },
+              "id": {
+                "type": "string",
+                "description": "Work item ID"
+              },
+              "project": {
+                "$ref": "#/components/schemas/WorkItemProject"
+              },
+              "source": {
+                "type": "string",
+                "description": "Issue tracking system (Jira, Linear, Azure)",
+                "enum": [
+                  "AZURE_DEVOPS_WORK_ITEMS",
+                  "CLICKUP",
+                  "GITHUB",
+                  "JIRA"
+                ]
+              },
+              "status": {
+                "$ref": "#/components/schemas/WorkItemStatus"
+              },
+              "title": {
+                "type": "string",
+                "description": "Work item title"
+              },
+              "url": {
+                "type": "string",
+                "description": "URL to the work item"
+              }
+            }
+          }
+        ]
+      },
+      "WorkItemProject": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Project name"
+          },
+          "url": {
+            "type": "string",
+            "description": "Project URL"
+          }
+        },
+        "description": "Work item project details"
+      },
+      "WorkItemStatus": {
+        "required": [
+          "statusBackgroundColor",
+          "statusIconColor",
+          "statusText",
+          "statusType"
+        ],
+        "type": "object",
+        "properties": {
+          "statusBackgroundColor": {
+            "type": "string",
+            "description": "Status background color"
+          },
+          "statusIconColor": {
+            "type": "string",
+            "description": "Status icon color"
+          },
+          "statusText": {
+            "type": "string",
+            "description": "Status text"
+          },
+          "statusType": {
+            "type": "string",
+            "description": "Status type"
+          }
+        },
+        "description": "Work item status information"
+      },
+      "WorkItems": {
+        "required": [
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Page number for pagination (0-indexed)",
+            "format": "int32",
+            "example": 0
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Maximum number of work items to return",
+            "format": "int32",
+            "example": 50
+          }
+        },
+        "description": "Request for work items (Jira, Linear, Azure DevOps issues) assigned to the user"
       },
       "WorkflowAction": {
         "required": [

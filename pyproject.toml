@@ -23,7 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13"
 ]
 dependencies = [
-    "fastmcp>=1.0.0",
+    "fastmcp==2.12.3",  # Pin to exact version to fix PublicIdentifier schema bug
     "httpx>=0.25.0",
     "pydantic>=2.0.0",
 ]

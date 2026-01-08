@@ -4102,7 +4102,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -4143,7 +4144,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4222,7 +4224,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -4269,7 +4272,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4324,7 +4328,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4394,7 +4399,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4470,7 +4476,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4525,7 +4532,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4601,7 +4609,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4717,7 +4726,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -4784,7 +4794,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4830,7 +4841,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4894,7 +4906,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -4970,7 +4983,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5045,7 +5059,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5112,7 +5127,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5169,7 +5185,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5223,7 +5240,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5289,7 +5307,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5316,7 +5335,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5369,7 +5389,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5425,7 +5446,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5474,7 +5496,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5531,7 +5554,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5597,7 +5621,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5663,7 +5688,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5713,7 +5739,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5772,7 +5799,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5826,7 +5854,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5875,7 +5904,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -5922,7 +5952,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -5992,7 +6023,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6061,7 +6093,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -6108,7 +6141,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6177,7 +6211,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -6222,7 +6257,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6285,7 +6321,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6356,7 +6393,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6425,7 +6463,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -6472,7 +6511,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6541,7 +6581,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6610,7 +6651,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6679,7 +6721,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6748,7 +6791,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -6795,7 +6839,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6864,7 +6909,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -6934,7 +6980,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7009,7 +7056,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7091,7 +7139,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7175,7 +7224,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7250,7 +7300,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7332,7 +7383,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -7415,7 +7467,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -7464,7 +7517,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -9103,7 +9157,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -9171,7 +9226,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -9268,7 +9324,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -9328,7 +9385,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -13440,7 +13498,7 @@
         "x-cortex-mcp-enabled": "false"
       },
       "post": {
-        "description": "Create a catalog entity using a descriptor YAML. If the YAML refers to an entity that already exists (as referenced by the `x-cortex-tag`), this API will update the existing entity. Note: This overwrites the entity entirely.",
+        "description": "Create a catalog entity using a descriptor YAML. By default (UPSERT mode), if the entity already exists (as referenced by the `x-cortex-tag`), this API will update the existing entity. In CREATE mode, the API will fail if the entity already exists.",
         "operationId": "createOrUpdateEntity",
         "parameters": [
           {
@@ -13460,6 +13518,19 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "description": "Mode of operation: UPSERT (default) creates or updates existing entity, CREATE fails if entity already exists.",
+            "in": "query",
+            "name": "mode",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "UPSERT",
+                "CREATE"
+              ]
             }
           }
         ],
@@ -15112,14 +15183,8 @@
             "schema": {
               "type": "array",
               "items": {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/Id"
-                  },
-                  {
-                    "$ref": "#/components/schemas/Tag"
-                  }
-                ]
+                "type": "string",
+                "description": "Entity identifier - can be a tag or CID"
               }
             }
           },
@@ -15131,14 +15196,8 @@
             "schema": {
               "type": "array",
               "items": {
-                "oneOf": [
-                  {
-                    "$ref": "#/components/schemas/Id"
-                  },
-                  {
-                    "$ref": "#/components/schemas/Tag"
-                  }
-                ]
+                "type": "string",
+                "description": "Entity identifier - can be a tag or CID"
               }
             }
           },
@@ -15261,7 +15320,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -16034,7 +16094,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -16082,7 +16143,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -16127,7 +16189,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17249,7 +17312,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17304,7 +17368,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17349,7 +17414,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17416,7 +17482,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17464,7 +17531,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17540,7 +17608,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17784,7 +17853,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17827,7 +17897,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           }
         ],
@@ -17899,7 +17970,8 @@
             "name": "tagOrId",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "description": "Entity identifier - can be a tag or CID"
             }
           },
           {
@@ -18757,6 +18829,7 @@
               "DATETIME",
               "JSON",
               "ARRAY",
+              "ENUM",
               "UNSUPPORTED"
             ]
           }
@@ -18982,9 +19055,8 @@
         "required": [
           "alias",
           "isDefault",
-          "lastFour",
           "organizationSlug",
-          "username"
+          "type"
         ],
         "type": "object",
         "properties": {
@@ -18997,18 +19069,124 @@
           "isDefault": {
             "type": "boolean"
           },
-          "lastFour": {
+          "organizationSlug": {
             "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfiguration.PERSONAL_ACCESS_TOKEN"
+          },
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfiguration.SERVICE_PRINCIPAL"
+          }
+        ]
+      },
+      "AzureDevopsConfiguration.PERSONAL_ACCESS_TOKEN": {
+        "title": "PERSONAL_ACCESS_TOKEN",
+        "required": [
+          "alias",
+          "isDefault",
+          "lastFour",
+          "organizationSlug",
+          "type",
+          "username"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfiguration"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "lastFour": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AzureDevopsConfiguration.SERVICE_PRINCIPAL": {
+        "title": "SERVICE_PRINCIPAL",
+        "required": [
+          "alias",
+          "azureTenantId",
+          "clientId",
+          "isDefault",
+          "lastFour",
+          "organizationSlug",
+          "type"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfiguration"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "azureTenantId": {
+                "type": "string"
+              },
+              "clientId": {
+                "type": "string"
+              },
+              "lastFour": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AzureDevopsConfigurationRequest": {
+        "required": [
+          "alias",
+          "isDefault",
+          "organizationSlug",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
           },
           "organizationSlug": {
             "type": "string"
           },
-          "username": {
+          "type": {
             "type": "string"
           }
-        }
+        },
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfigurationRequest.PERSONAL_ACCESS_TOKEN"
+          },
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfigurationRequest.SERVICE_PRINCIPAL"
+          }
+        ]
       },
-      "AzureDevopsConfigurationRequest": {
+      "AzureDevopsConfigurationRequest.PERSONAL_ACCESS_TOKEN": {
+        "title": "PERSONAL_ACCESS_TOKEN",
         "required": [
           "alias",
           "isDefault",
@@ -19017,6 +19195,61 @@
           "username"
         ],
         "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfigurationRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "personalAccessToken": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AzureDevopsConfigurationRequest.SERVICE_PRINCIPAL": {
+        "title": "SERVICE_PRINCIPAL",
+        "required": [
+          "alias",
+          "azureTenantId",
+          "clientId",
+          "clientSecret",
+          "isDefault",
+          "organizationSlug"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsConfigurationRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "azureTenantId": {
+                "type": "string"
+              },
+              "clientId": {
+                "type": "string"
+              },
+              "clientSecret": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AzureDevopsUpdateConfigurationRequest": {
+        "required": [
+          "alias",
+          "isDefault",
+          "type"
+        ],
+        "type": "object",
         "properties": {
           "alias": {
             "type": "string"
@@ -19030,28 +19263,72 @@
           "organizationSlug": {
             "type": "string"
           },
-          "personalAccessToken": {
-            "type": "string"
-          },
-          "username": {
+          "type": {
             "type": "string"
           }
-        }
+        },
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsUpdateConfigurationRequest.PERSONAL_ACCESS_TOKEN"
+          },
+          {
+            "$ref": "#/components/schemas/AzureDevopsUpdateConfigurationRequest.SERVICE_PRINCIPAL"
+          }
+        ]
       },
-      "AzureDevopsUpdateConfigurationRequest": {
+      "AzureDevopsUpdateConfigurationRequest.PERSONAL_ACCESS_TOKEN": {
+        "title": "PERSONAL_ACCESS_TOKEN",
         "required": [
           "alias",
           "isDefault"
         ],
         "type": "object",
-        "properties": {
-          "alias": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsUpdateConfigurationRequest"
           },
-          "isDefault": {
-            "type": "boolean"
+          {
+            "type": "object",
+            "properties": {
+              "personalAccessToken": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ]
+      },
+      "AzureDevopsUpdateConfigurationRequest.SERVICE_PRINCIPAL": {
+        "title": "SERVICE_PRINCIPAL",
+        "required": [
+          "alias",
+          "isDefault"
+        ],
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AzureDevopsUpdateConfigurationRequest"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "azureTenantId": {
+                "type": "string"
+              },
+              "clientId": {
+                "type": "string"
+              },
+              "clientSecret": {
+                "type": "string"
+              }
+            }
+          }
+        ]
       },
       "AzureResourceType": {
         "required": [
@@ -19182,8 +19459,20 @@
           "alias": {
             "type": "string"
           },
+          "azureTenantId": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          },
           "isDefault": {
             "type": "boolean"
+          },
+          "subscriptionId": {
+            "type": "string"
           }
         }
       },
@@ -19715,6 +20004,9 @@
         "type": "object",
         "properties": {
           "description": {
+            "type": "string"
+          },
+          "iconTag": {
             "type": "string"
           },
           "name": {
@@ -20659,6 +20951,9 @@
         "type": "object",
         "properties": {
           "description": {
+            "type": "string"
+          },
+          "iconTag": {
             "type": "string"
           },
           "name": {
@@ -23262,7 +23557,8 @@
             "description": "Whether higher values are better (POSITIVE) or worse (NEGATIVE) for this metric",
             "enum": [
               "POSITIVE",
-              "NEGATIVE"
+              "NEGATIVE",
+              "NEUTRAL"
             ]
           }
         },
@@ -24135,28 +24431,6 @@
             }
           }
         ]
-      },
-      "Id": {
-        "required": [
-          "cid"
-        ],
-        "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Identifier"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "cid": {
-                "type": "string"
-              }
-            }
-          }
-        ]
-      },
-      "Identifier": {
-        "type": "object"
       },
       "IdpGroupDetailsRequest": {
         "required": [
@@ -27866,6 +28140,7 @@
           "ladderLevels",
           "score",
           "scorePercentage",
+          "scorecardId",
           "scorecardName",
           "totalPossibleScore"
         ],
@@ -27883,6 +28158,10 @@
           "scorePercentage": {
             "type": "number"
           },
+          "scorecardId": {
+            "type": "integer",
+            "format": "int64"
+          },
           "scorecardName": {
             "type": "string"
           },
@@ -27893,6 +28172,7 @@
       },
       "ScorecardServiceScore": {
         "required": [
+          "scorecardId",
           "scorecardName",
           "scorecardTag",
           "serviceScores"
@@ -27901,6 +28181,10 @@
         "properties": {
           "scorecardFilter": {
             "$ref": "#/components/schemas/Filter"
+          },
+          "scorecardId": {
+            "type": "integer",
+            "format": "int64"
           },
           "scorecardName": {
             "type": "string"
@@ -28292,25 +28576,6 @@
             "properties": {
               "entityGroupFilter": {
                 "$ref": "#/components/schemas/EntityGroupFilterDTO"
-              }
-            }
-          }
-        ]
-      },
-      "Tag": {
-        "required": [
-          "tag"
-        ],
-        "type": "object",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Identifier"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "tag": {
-                "type": "string"
               }
             }
           }
@@ -28761,6 +29026,9 @@
                   "negative": {
                     "type": "boolean"
                   },
+                  "positive": {
+                    "type": "boolean"
+                  },
                   "seconds": {
                     "type": "integer",
                     "format": "int64"
@@ -28781,6 +29049,9 @@
                               "format": "int32"
                             },
                             "negative": {
+                              "type": "boolean"
+                            },
+                            "positive": {
                               "type": "boolean"
                             },
                             "seconds": {
@@ -28898,6 +29169,9 @@
         "type": "object",
         "properties": {
           "description": {
+            "type": "string"
+          },
+          "iconTag": {
             "type": "string"
           },
           "name": {
@@ -30367,6 +30641,10 @@
           "isDraft": {
             "type": "boolean",
             "description": "Whether the workflow is a draft"
+          },
+          "isRunnableViaApi": {
+            "type": "boolean",
+            "description": "Whether the workflow is runnable via the public API"
           },
           "name": {
             "type": "string",

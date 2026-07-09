@@ -8,6 +8,7 @@ from .clients.cortex import create_cortex_client
 from .components.customizers import customize_components
 from .config import Config
 from .routes.mappers import custom_route_mapper
+from .security import PathTraversalGuardMiddleware, extract_path_param_names
 from .utils.logging import setup_logging
 from .utils.openapi_resolver import resolve_refs
 
@@ -53,6 +54,12 @@ def create_mcp_server() -> FastMCP:
         route_map_fn=custom_route_mapper,
         mcp_component_fn=customize_components,
     )
+
+    # Reject path-parameter values that could traverse outside the intended
+    # backend route before the request is forwarded (see src/security.py).
+    path_param_names = extract_path_param_names(openapi_spec)
+    mcp_server.add_middleware(PathTraversalGuardMiddleware(path_param_names))
+    logger.info(f"Path-traversal guard enabled for {len(path_param_names)} path parameters")
 
     logger.info(f"MCP server '{Config.APP_NAME}' created successfully")
 

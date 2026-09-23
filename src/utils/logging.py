@@ -26,7 +26,7 @@ def setup_logging(log_level: str | None = None) -> logging.Logger:
     )
 
     if not Config.DEBUG:
-        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpx2").setLevel(logging.WARNING)
         logging.getLogger("httpcore").setLevel(logging.WARNING)
         logging.getLogger("langchain").setLevel(logging.INFO)
         logging.getLogger("langchain_community").setLevel(logging.INFO)

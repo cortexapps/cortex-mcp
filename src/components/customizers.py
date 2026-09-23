@@ -1,11 +1,11 @@
 """Component customization for MCP server."""
 
-from fastmcp.server.openapi import (
-    HTTPRoute,
+from fastmcp.server.providers.openapi import (
     OpenAPIResource,
     OpenAPIResourceTemplate,
     OpenAPITool,
 )
+from fastmcp.utilities.openapi.models import HTTPRoute
 
 from ..utils.logging import get_logger
 

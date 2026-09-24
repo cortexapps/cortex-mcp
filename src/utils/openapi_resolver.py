@@ -35,35 +35,35 @@ def resolve_refs(spec: dict[str, Any]) -> dict[str, Any]:
     # Get the components/schemas section for reference resolution
     schemas = spec.get("components", {}).get("schemas", {})
 
-    def resolve_schema(obj: Any, visited: set[str] | None = None) -> Any:
+    def resolve_schema(obj: Any, visited: dict[str, int] | None = None) -> Any:
         """Recursively resolve $ref in an object."""
         if visited is None:
-            visited = set()
+            visited = {}
 
         if isinstance(obj, dict):
             # Check if this is a $ref
             if "$ref" in obj and len(obj) == 1:
                 ref_path = obj["$ref"]
-
-                # Prevent infinite recursion
-                if ref_path in visited:
-                    # Return the ref as-is to avoid infinite loop
+                schema_name = ref_path.removeprefix("#/components/schemas/")
+                if schema_name == ref_path or schema_name not in schemas:
                     return obj
 
-                visited.add(ref_path)
+                # A $ref left in place would dangle once FastMCP moves the schema into a
+                # tool's $defs, so a cycle is cut rather than preserved. springdoc emits
+                # every polymorphic type as a cycle: the parent lists its subtypes in
+                # oneOf, and each subtype extends the parent through allOf. Re-expanding
+                # the parent once without its subtypes keeps the fields they inherit.
+                depth = visited.get(ref_path, 0)
+                if depth >= 2:
+                    return _cycle_placeholder(schemas[schema_name])
+                target = schemas[schema_name]
+                if depth == 1:
+                    target = _without_subtypes(target)
 
-                # Extract schema name from reference
-                if ref_path.startswith("#/components/schemas/"):
-                    schema_name = ref_path.split("/")[-1]
-                    if schema_name in schemas:
-                        # Recursively resolve the referenced schema
-                        resolved = resolve_schema(schemas[schema_name].copy(), visited)
-                        visited.remove(ref_path)
-                        return resolved
-
-                # If we can't resolve, return as-is
-                visited.remove(ref_path)
-                return obj
+                visited[ref_path] = depth + 1
+                resolved = resolve_schema(target, visited)
+                visited[ref_path] = depth
+                return resolved
             else:
                 # Recursively process all values in the dict
                 result = {}
@@ -83,6 +83,21 @@ def resolve_refs(spec: dict[str, Any]) -> dict[str, Any]:
         spec["paths"] = resolve_schema(spec["paths"])
 
     return spec
+
+
+def _without_subtypes(schema: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in schema.items()
+        if key not in ("oneOf", "anyOf", "discriminator")
+    }
+
+
+def _cycle_placeholder(schema: dict[str, Any]) -> dict[str, Any]:
+    placeholder: dict[str, Any] = {"type": schema.get("type", "object")}
+    if "description" in schema:
+        placeholder["description"] = schema["description"]
+    return placeholder
 
 
 # Use if context becomes too large for inline definitions

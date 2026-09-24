@@ -122,12 +122,73 @@ class TestOpenAPIResolver:
         # Should not raise an exception and should handle circular refs
         resolved = resolve_refs(spec)
 
-        # Should have resolved the top-level ref but left circular ref intact
         schema = resolved["paths"]["/api/test"]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
         assert schema["type"] == "object"
         assert "value" in schema["properties"]
-        # Circular ref should be preserved to prevent infinite recursion
-        assert schema["properties"]["parent"]["$ref"] == "#/components/schemas/Node"
+        # The cycle is expanded once more, then cut with a placeholder instead of a $ref,
+        # which FastMCP would turn into a dangling #/$defs pointer
+        parent = schema["properties"]["parent"]
+        assert "value" in parent["properties"]
+        assert parent["properties"]["parent"] == {"type": "object"}
+        assert "$ref" not in json.dumps(schema)
+
+    def test_resolve_polymorphic_refs(self):
+        """Test the parent/subtype cycle springdoc emits for polymorphic types."""
+        spec = {
+            "paths": {
+                "/api/test": {
+                    "post": {
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {"$ref": "#/components/schemas/Action"}
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "components": {
+                "schemas": {
+                    "Action": {
+                        "required": ["type"],
+                        "type": "object",
+                        "properties": {"type": {"type": "string"}},
+                        "discriminator": {"propertyName": "type"},
+                        "oneOf": [
+                            {"$ref": "#/components/schemas/Action.JQ"},
+                            {"$ref": "#/components/schemas/Action.HTTP"},
+                        ],
+                    },
+                    "Action.JQ": {
+                        "type": "object",
+                        "allOf": [
+                            {"$ref": "#/components/schemas/Action"},
+                            {"type": "object", "properties": {"expression": {"type": "string"}}},
+                        ],
+                    },
+                    "Action.HTTP": {
+                        "type": "object",
+                        "allOf": [
+                            {"$ref": "#/components/schemas/Action"},
+                            {"type": "object", "properties": {"url": {"type": "string"}}},
+                        ],
+                    },
+                }
+            },
+        }
+
+        resolved = resolve_refs(spec)
+
+        schema = resolved["paths"]["/api/test"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        assert "$ref" not in json.dumps(schema)
+        jq_parent, jq_own = schema["oneOf"][0]["allOf"]
+        # The subtype keeps the fields it inherits, but not the parent's list of subtypes
+        assert jq_parent["properties"]["type"] == {"type": "string"}
+        assert jq_parent["required"] == ["type"]
+        assert "oneOf" not in jq_parent
+        assert "discriminator" not in jq_parent
+        assert jq_own["properties"]["expression"] == {"type": "string"}
 
     def test_resolve_refs_in_arrays(self):
         """Test resolving $refs inside arrays."""

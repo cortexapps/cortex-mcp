@@ -1,7 +1,11 @@
 """Tests for component customization."""
 from unittest.mock import Mock
 
-from fastmcp.server.openapi import OpenAPIResource, OpenAPIResourceTemplate, OpenAPITool
+from fastmcp.server.providers.openapi import (
+    OpenAPIResource,
+    OpenAPIResourceTemplate,
+    OpenAPITool,
+)
 
 from src.components.customizers import customize_components
 

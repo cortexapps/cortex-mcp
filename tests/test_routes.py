@@ -1,7 +1,7 @@
 """Tests for route mapping logic."""
 from unittest.mock import Mock
 
-from fastmcp.server.openapi import MCPType
+from fastmcp.server.providers.openapi import MCPType
 
 from src.routes.mappers import custom_route_mapper
 

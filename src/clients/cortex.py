@@ -1,6 +1,6 @@
 """Cortex API client configuration."""
 
-import httpx
+import httpx2 as httpx
 
 from ..config import Config
 from ..utils.logging import get_logger

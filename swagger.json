@@ -18468,6 +18468,102 @@
         ],
         "x-cortex-mcp-enabled": "false"
       }
+    },
+    "/api/v1/catalog-pages": {
+      "get": {
+        "description": "Retrieves a list of catalogs.\n\nAPI key must have the `View catalogs` permission.",
+        "operationId": "listCatalogPages",
+        "parameters": [
+          {
+            "description": "Number of results to return per page, between 1 and 1000. Default 250.",
+            "in": "query",
+            "name": "pageSize",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 250
+            }
+          },
+          {
+            "description": "Page number to return, 0-indexed. Default 0.",
+            "in": "query",
+            "name": "page",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogPageListResponse"
+                }
+              }
+            },
+            "description": "Successfully retrieved catalogs"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        },
+        "summary": "List catalogs",
+        "tags": [
+          "Catalogs"
+        ],
+        "x-cortex-mcp-enabled": "true"
+      }
+    },
+    "/api/v1/catalog-pages/{slug}": {
+      "get": {
+        "description": "Retrieves a single catalog by slug.\n\nAPI key must have the `View catalogs` permission.",
+        "operationId": "getCatalogPage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogPage"
+                }
+              }
+            },
+            "description": "Successfully retrieved catalog"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Catalog not found"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        },
+        "summary": "Get catalog",
+        "tags": [
+          "Catalogs"
+        ],
+        "x-cortex-mcp-enabled": "true"
+      }
     }
   },
   "components": {
@@ -31631,6 +31727,106 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page number, 0-indexed",
+            "format": "int32"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of results",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages",
+            "format": "int32"
+          }
+        }
+      },
+      "CatalogPage": {
+        "required": [
+          "dateCreated",
+          "dateUpdated",
+          "iconTag",
+          "isCortexManaged",
+          "isDraft",
+          "name",
+          "slug",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "dateCreated": {
+            "type": "string",
+            "description": "Time the catalog was created",
+            "format": "date-time"
+          },
+          "dateUpdated": {
+            "type": "string",
+            "description": "Time the catalog was last updated",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the catalog"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/Filter"
+          },
+          "iconTag": {
+            "type": "string",
+            "description": "Tag of the icon shown for the catalog",
+            "example": "cortex"
+          },
+          "isCortexManaged": {
+            "type": "boolean",
+            "description": "Whether the catalog is managed by Cortex. Cortex-managed catalogs cannot be modified or deleted"
+          },
+          "isDraft": {
+            "type": "boolean",
+            "description": "Whether the catalog is a draft"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the catalog"
+          },
+          "relationshipTypeTag": {
+            "type": "string",
+            "description": "Tag of the relationship type the catalog is built from, for `RELATIONSHIP_TYPE` catalogs"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique identifier for the catalog",
+            "example": "my-catalog"
+          },
+          "type": {
+            "type": "string",
+            "description": "What the catalog is built from. Optional: inferred as `FILTER` when `filter` is set and `RELATIONSHIP_TYPE` when `relationshipTypeTag` is set. Must be set explicitly to `DOMAIN` for a domain catalog",
+            "enum": [
+              "FILTER",
+              "RELATIONSHIP_TYPE",
+              "DOMAIN"
+            ]
+          }
+        }
+      },
+      "CatalogPageListResponse": {
+        "required": [
+          "catalogPages",
+          "page",
+          "total",
+          "totalPages"
+        ],
+        "type": "object",
+        "properties": {
+          "catalogPages": {
+            "type": "array",
+            "description": "The catalogs on this page of results",
+            "items": {
+              "$ref": "#/components/schemas/CatalogPage"
             }
           },
           "page": {

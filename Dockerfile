@@ -24,7 +24,14 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN apk add --no-cache git
+# The python base image lags Alpine security releases, and CI reuses cached layers,
+# so bump APK_SECURITY_REFRESH to pull the latest Alpine packages again.
+# 2026-10-21: ca-certificates 20261020-r0 drops emSign ECC Root CA - G3, whose
+# subordinate CA keys are compromised.
+ARG APK_SECURITY_REFRESH=2026-10-21
+RUN echo "apk security refresh: $APK_SECURITY_REFRESH" \
+    && apk upgrade --no-cache \
+    && apk add --no-cache git
 
 # Copy wheels from builder and install
 COPY --from=builder /wheels /wheels

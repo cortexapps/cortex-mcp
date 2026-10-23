@@ -87,3 +87,50 @@ class TestCustomizeComponents:
 
         assert original in tool.description
         assert tool.description != original
+
+
+class TestToolAnnotations:
+    """Hints that let clients approve read tools apart from write tools."""
+
+    @staticmethod
+    def _tool(route):
+        tool = Mock(spec=OpenAPITool)
+        tool.description = ""
+        tool.tags = set()
+        customize_components(route, tool)
+        return tool
+
+    def test_get_is_read_only(self, sample_route):
+        assert self._tool(sample_route).annotations.read_only_hint is True
+
+    def test_other_methods_default_to_destructive(self, sample_route):
+        sample_route.method = "POST"
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is True
+        assert annotations.idempotent_hint is False
+
+    def test_put_is_idempotent(self, sample_route):
+        sample_route.method = "PUT"
+
+        assert self._tool(sample_route).annotations.idempotent_hint is True
+
+    def test_access_extension_marks_a_post_read_only(self, sample_route):
+        sample_route.method = "POST"
+        sample_route.extensions = {"x-cortex-mcp-access": "read"}
+
+        assert self._tool(sample_route).annotations.read_only_hint is True
+
+    def test_access_extension_marks_a_write_additive(self, sample_route):
+        sample_route.method = "POST"
+        sample_route.extensions = {"x-cortex-mcp-access": "additive"}
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is False
+
+    def test_title_is_the_summary(self, sample_route):
+        assert self._tool(sample_route).title == "List resources"

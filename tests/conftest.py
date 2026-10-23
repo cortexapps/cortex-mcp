@@ -27,6 +27,7 @@ def sample_route():
     route = Mock()
     route.path = "/api/v1/resources"
     route.method = "GET"
+    route.summary = "List resources"
     route.tags = ["api", "resources"]
     route.extensions = {"x-cortex-mcp-enabled": "true"}
     return route

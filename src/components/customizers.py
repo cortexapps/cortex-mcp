@@ -14,6 +14,8 @@ logger = get_logger(__name__)
 
 ComponentType = OpenAPITool | OpenAPIResource | OpenAPIResourceTemplate
 
+ACCESS_VALUES = ("read", "additive", "destructive")
+
 def customize_components(
     route: HTTPRoute,
     component: ComponentType,
@@ -117,7 +119,7 @@ def _tool_annotations(route: HTTPRoute) -> ToolAnnotations:
     access = route.extensions.get("x-cortex-mcp-access")
     if access is None:
         access = "read" if method == "GET" else "destructive"
-    elif access not in ("read", "additive", "destructive"):
+    elif access not in ACCESS_VALUES:
         logger.warning(
             f"Unknown x-cortex-mcp-access {access!r} on {method} {route.path}, "
             "treating it as destructive"

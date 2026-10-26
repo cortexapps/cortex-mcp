@@ -1,4 +1,5 @@
 """Tests for component customization."""
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -149,6 +150,7 @@ class TestToolAnnotations:
 
     def test_unknown_access_is_destructive(self, sample_route, caplog):
         """Test that an unknown x-cortex-mcp-access value warns and is destructive."""
+        caplog.set_level(logging.WARNING, logger="src.components.customizers")
         sample_route.extensions = {"x-cortex-mcp-access": "Read"}
 
         annotations = self._tool(sample_route).annotations

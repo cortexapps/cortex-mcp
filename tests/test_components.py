@@ -147,14 +147,15 @@ class TestToolAnnotations:
         assert annotations.read_only_hint is False
         assert annotations.destructive_hint is True
 
-    def test_unknown_access_is_destructive(self, sample_route):
-        """Test that an unknown x-cortex-mcp-access value counts as destructive."""
+    def test_unknown_access_is_destructive(self, sample_route, caplog):
+        """Test that an unknown x-cortex-mcp-access value warns and is destructive."""
         sample_route.extensions = {"x-cortex-mcp-access": "Read"}
 
         annotations = self._tool(sample_route).annotations
 
         assert annotations.read_only_hint is False
         assert annotations.destructive_hint is True
+        assert "Unknown x-cortex-mcp-access 'Read'" in caplog.text
 
     def test_title_is_the_summary(self, sample_route):
         """Test that the tool title is the operation summary."""

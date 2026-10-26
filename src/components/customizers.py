@@ -14,8 +14,6 @@ logger = get_logger(__name__)
 
 ComponentType = OpenAPITool | OpenAPIResource | OpenAPIResourceTemplate
 
-ACCESS_EXTENSION = "x-cortex-mcp-access"
-
 def customize_components(
     route: HTTPRoute,
     component: ComponentType,
@@ -111,13 +109,20 @@ def customize_components(
 def _tool_annotations(route: HTTPRoute) -> ToolAnnotations:
     """Hint whether a tool only reads, only adds, or may overwrite data.
 
-    The x-cortex-mcp-access extension wins. Without it a GET reads and anything
+    The x-cortex-mcp-access extension ("read", "additive" or "destructive") wins,
+    and any other value counts as destructive. Without it a GET reads and anything
     else may be destructive, which is also what MCP clients assume.
     """
     method = route.method.upper()
-    access = route.extensions.get(ACCESS_EXTENSION) or (
-        "read" if method == "GET" else "destructive"
-    )
+    access = route.extensions.get("x-cortex-mcp-access")
+    if access is None:
+        access = "read" if method == "GET" else "destructive"
+    elif access not in ("read", "additive", "destructive"):
+        logger.warning(
+            f"Unknown x-cortex-mcp-access {access!r} on {method} {route.path}, "
+            "treating it as destructive"
+        )
+        access = "destructive"
     if access == "read":
         return ToolAnnotations(read_only_hint=True)
     return ToolAnnotations(

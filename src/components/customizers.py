@@ -130,7 +130,6 @@ def _tool_annotations(route: HTTPRoute) -> ToolAnnotations:
     return ToolAnnotations(
         read_only_hint=False,
         destructive_hint=access != "additive",
-        idempotent_hint=method == "PUT",
     )
 
 

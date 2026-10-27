@@ -106,13 +106,8 @@ class TestToolAnnotations:
         """Test that a GET without x-cortex-mcp-access is read-only."""
         assert self._tool(sample_route).annotations.read_only_hint is True
 
-    @pytest.mark.parametrize(
-        ("method", "idempotent"),
-        [("POST", False), ("PUT", True), ("PATCH", False), ("DELETE", False)],
-    )
-    def test_other_methods_default_to_destructive(
-        self, sample_route, method, idempotent
-    ):
+    @pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
+    def test_other_methods_default_to_destructive(self, sample_route, method):
         """Test that other methods without x-cortex-mcp-access are destructive."""
         sample_route.method = method
 
@@ -120,7 +115,7 @@ class TestToolAnnotations:
 
         assert annotations.read_only_hint is False
         assert annotations.destructive_hint is True
-        assert annotations.idempotent_hint is idempotent
+        assert annotations.idempotent_hint is None
 
     def test_access_extension_marks_a_post_read_only(self, sample_route):
         """Test that x-cortex-mcp-access: read makes a POST read-only."""

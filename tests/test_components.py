@@ -1,6 +1,8 @@
 """Tests for component customization."""
+import logging
 from unittest.mock import Mock
 
+import pytest
 from fastmcp.server.providers.openapi import (
     OpenAPIResource,
     OpenAPIResourceTemplate,
@@ -87,3 +89,71 @@ class TestCustomizeComponents:
 
         assert original in tool.description
         assert tool.description != original
+
+
+class TestToolAnnotations:
+    """Hints that let clients approve read tools apart from write tools."""
+
+    @staticmethod
+    def _tool(route):
+        tool = Mock(spec=OpenAPITool)
+        tool.description = ""
+        tool.tags = set()
+        customize_components(route, tool)
+        return tool
+
+    def test_get_is_read_only(self, sample_route):
+        """Test that a GET without x-cortex-mcp-access is read-only."""
+        assert self._tool(sample_route).annotations.read_only_hint is True
+
+    @pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
+    def test_other_methods_default_to_destructive(self, sample_route, method):
+        """Test that other methods without x-cortex-mcp-access are destructive."""
+        sample_route.method = method
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is True
+        assert annotations.idempotent_hint is None
+
+    def test_access_extension_marks_a_post_read_only(self, sample_route):
+        """Test that x-cortex-mcp-access: read makes a POST read-only."""
+        sample_route.method = "POST"
+        sample_route.extensions = {"x-cortex-mcp-access": "read"}
+
+        assert self._tool(sample_route).annotations.read_only_hint is True
+
+    def test_access_extension_marks_a_write_additive(self, sample_route):
+        """Test that x-cortex-mcp-access: additive is a non-destructive write."""
+        sample_route.method = "POST"
+        sample_route.extensions = {"x-cortex-mcp-access": "additive"}
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is False
+
+    def test_access_extension_marks_a_get_destructive(self, sample_route):
+        """Test that x-cortex-mcp-access: destructive overrides the GET default."""
+        sample_route.extensions = {"x-cortex-mcp-access": "destructive"}
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is True
+
+    def test_unknown_access_is_destructive(self, sample_route, caplog):
+        """Test that an unknown x-cortex-mcp-access value warns and is destructive."""
+        caplog.set_level(logging.WARNING, logger="src.components.customizers")
+        sample_route.extensions = {"x-cortex-mcp-access": "Read"}
+
+        annotations = self._tool(sample_route).annotations
+
+        assert annotations.read_only_hint is False
+        assert annotations.destructive_hint is True
+        assert "Unknown x-cortex-mcp-access 'Read'" in caplog.text
+
+    def test_title_is_the_summary(self, sample_route):
+        """Test that the tool title is the operation summary."""
+        assert self._tool(sample_route).title == "List resources"

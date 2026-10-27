@@ -6,12 +6,15 @@ from fastmcp.server.providers.openapi import (
     OpenAPITool,
 )
 from fastmcp.utilities.openapi.models import HTTPRoute
+from mcp.types import ToolAnnotations
 
 from ..utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 ComponentType = OpenAPITool | OpenAPIResource | OpenAPIResourceTemplate
+
+ACCESS_VALUES = ("read", "additive", "destructive")
 
 def customize_components(
     route: HTTPRoute,
@@ -50,6 +53,11 @@ def customize_components(
             )
         # Hide this fully for now.
         component.output_schema = None
+
+        # Without a title, FastMCP derives one from the operationId: "Addcustomdataforentity".
+        if route.summary:
+            component.title = route.summary
+        component.annotations = _tool_annotations(route)
 
         # SCHEMA REFERENCE HANDLING:
         # OpenAPI-generated MCP tool schemas contain $defs with nested $ref references
@@ -98,6 +106,32 @@ def customize_components(
 
     logger.debug(f"Final description: {component.description}")
     logger.debug(f"Final tags: {component.tags}")
+
+
+def _tool_annotations(route: HTTPRoute) -> ToolAnnotations:
+    """Hint whether a tool only reads, only adds, or may overwrite data.
+
+    The x-cortex-mcp-access extension ("read", "additive" or "destructive") wins,
+    and any other value counts as destructive. Without it a GET reads and anything
+    else may be destructive, which is also what MCP clients assume.
+    """
+    method = route.method.upper()
+    access = route.extensions.get("x-cortex-mcp-access")
+    if access is None:
+        access = "read" if method == "GET" else "destructive"
+    elif access not in ACCESS_VALUES:
+        logger.warning(
+            f"Unknown x-cortex-mcp-access {access!r} on {method} {route.path}, "
+            "treating it as destructive"
+        )
+        access = "destructive"
+    read_only = access == "read"
+    # MCP defines destructiveHint only for tools that aren't read-only.
+    destructive = None if read_only else access == "destructive"
+    return ToolAnnotations(
+        read_only_hint=read_only,
+        destructive_hint=destructive,
+    )
 
 
 def _format_tool_description(route: HTTPRoute, original: str) -> str:

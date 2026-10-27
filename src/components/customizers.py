@@ -125,11 +125,12 @@ def _tool_annotations(route: HTTPRoute) -> ToolAnnotations:
             "treating it as destructive"
         )
         access = "destructive"
-    if access == "read":
-        return ToolAnnotations(read_only_hint=True)
+    read_only = access == "read"
+    # MCP defines destructiveHint only for tools that aren't read-only.
+    destructive = None if read_only else access == "destructive"
     return ToolAnnotations(
-        read_only_hint=False,
-        destructive_hint=access != "additive",
+        read_only_hint=read_only,
+        destructive_hint=destructive,
     )
 
 

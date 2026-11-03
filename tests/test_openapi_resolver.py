@@ -182,13 +182,13 @@ class TestOpenAPIResolver:
 
         schema = resolved["paths"]["/api/test"]["post"]["requestBody"]["content"]["application/json"]["schema"]
         assert "$ref" not in json.dumps(schema)
-        jq_parent, jq_own = schema["oneOf"][0]["allOf"]
+        jq = schema["oneOf"][0]
         # The subtype keeps the fields it inherits, but not the parent's list of subtypes
-        assert jq_parent["properties"]["type"] == {"type": "string"}
-        assert jq_parent["required"] == ["type"]
-        assert "oneOf" not in jq_parent
-        assert "discriminator" not in jq_parent
-        assert jq_own["properties"]["expression"] == {"type": "string"}
+        assert jq["properties"] == {"type": {"type": "string"}, "expression": {"type": "string"}}
+        assert jq["required"] == ["type"]
+        assert "allOf" not in jq
+        assert "oneOf" not in jq
+        assert "discriminator" not in jq
 
     def test_resolve_refs_in_arrays(self):
         """Test resolving $refs inside arrays."""
@@ -342,3 +342,105 @@ class TestOpenAPIResolver:
 
         # Original should be unchanged
         assert json.dumps(spec, sort_keys=True) == original_json
+
+    def test_subtype_required_fields_live_next_to_their_properties(self):
+        """Test that a subtype's required list ends up on the object that defines those fields.
+
+        springdoc puts the subtype's required list next to an allOf of the parent and the
+        subtype's own fields. Gemini/Vertex AI reject a required name that is not in the same
+        object's properties, so the allOf is merged into one object.
+        """
+        spec = {
+            "paths": {
+                "/api/test": {
+                    "post": {
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "comparison": {"oneOf": [{"$ref": "#/components/schemas/TimeWindow"}]}
+                                        },
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "components": {
+                "schemas": {
+                    "Column": {
+                        "required": ["name", "type"],
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "ordinal": {"type": "integer", "format": "int32"},
+                            "type": {"type": "string"},
+                        },
+                        "discriminator": {"propertyName": "type"},
+                    },
+                    "TimeWindow": {
+                        "required": ["name", "windowSize"],
+                        "type": "object",
+                        "allOf": [
+                            {"$ref": "#/components/schemas/Column"},
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "ordinal": {
+                                        "type": "integer",
+                                        "format": "int32",
+                                        "description": "Zero-based column position",
+                                    },
+                                    "windowSize": {"type": "object"},
+                                },
+                            },
+                        ],
+                    },
+                }
+            },
+        }
+
+        resolved = resolve_refs(spec)
+
+        schema = resolved["paths"]["/api/test"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        window = schema["properties"]["comparison"]["oneOf"][0]
+        assert "allOf" not in window
+        assert "discriminator" not in window
+        assert window["required"] == ["name", "type", "windowSize"]
+        assert set(window["required"]) <= set(window["properties"])
+        assert window["properties"]["ordinal"] == {
+            "type": "integer",
+            "format": "int32",
+            "description": "Zero-based column position",
+        }
+
+    def test_all_of_with_conflicting_properties_is_kept(self):
+        """Test that branches defining a property differently are not merged."""
+        spec = {
+            "paths": {
+                "/api/test": {
+                    "post": {
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "allOf": [
+                                            {"type": "object", "properties": {"id": {"type": "string"}}},
+                                            {"type": "object", "properties": {"id": {"type": "integer"}}},
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        resolved = resolve_refs(spec)
+
+        schema = resolved["paths"]["/api/test"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        assert len(schema["allOf"]) == 2

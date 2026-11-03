@@ -69,7 +69,7 @@ def resolve_refs(spec: dict[str, Any]) -> dict[str, Any]:
                 result = {}
                 for key, value in obj.items():
                     result[key] = resolve_schema(value, visited)
-                return result
+                return _merge_all_of(result)
 
         elif isinstance(obj, list):
             # Recursively process all items in the list
@@ -83,6 +83,70 @@ def resolve_refs(spec: dict[str, Any]) -> dict[str, Any]:
         spec["paths"] = resolve_schema(spec["paths"])
 
     return spec
+
+
+def _merge_all_of(schema: dict[str, Any]) -> dict[str, Any]:
+    """Fold a plain allOf of object schemas into the schema that holds it.
+
+    springdoc emits each subtype as ``{"required": [...], "allOf": [Parent, {own
+    fields}]}``, so ``required`` names properties that only exist inside the allOf
+    branches. Clients that validate tool schemas strictly (Gemini/Vertex AI) reject
+    that. Merging the branches gives the same constraints with ``properties`` and
+    ``required`` on one object. Anything that is not a plain object branch, or a
+    property the branches define differently, leaves the allOf as it is.
+    """
+    branches = schema.get("allOf")
+    if not isinstance(branches, list) or not branches:
+        return schema
+    mergeable = {
+        "type",
+        "properties",
+        "required",
+        "description",
+        "title",
+        "discriminator",
+    }
+    if not all(
+        isinstance(branch, dict)
+        and set(branch) <= mergeable
+        and branch.get("type", "object") == "object"
+        for branch in branches
+    ):
+        return schema
+    if schema.get("type", "object") != "object":
+        return schema
+
+    properties: dict[str, Any] = {}
+    required: list[str] = []
+    for part in [*branches, schema]:
+        for name, prop in part.get("properties", {}).items():
+            if name in properties:
+                merged = _merge_property(properties[name], prop)
+                if merged is None:
+                    return schema
+                properties[name] = merged
+            else:
+                properties[name] = prop
+        for name in part.get("required", []):
+            if name not in required:
+                required.append(name)
+
+    merged_schema = {key: value for key, value in schema.items() if key != "allOf"}
+    merged_schema["type"] = "object"
+    merged_schema["properties"] = properties
+    if required:
+        merged_schema["required"] = required
+    return merged_schema
+
+
+def _merge_property(first: Any, second: Any) -> Any:
+    """Combine two definitions of one property, or None if they disagree."""
+    if not (isinstance(first, dict) and isinstance(second, dict)):
+        return first if first == second else None
+    for key in set(first) & set(second):
+        if key not in ("description", "title") and first[key] != second[key]:
+            return None
+    return {**first, **second}
 
 
 def _without_subtypes(schema: dict[str, Any]) -> dict[str, Any]:
